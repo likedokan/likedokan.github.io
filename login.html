@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লগইন/সাইনআপ</title>
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        /* ইনপুট স্টাইলিং */
+        .app-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .app-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* নোটিফিকেশন স্টাইলিং */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.info { background-color: #3b82f6; }
+        .notification.success { background-color: #10b981; }
+        .notification.error { background-color: #ef4444; }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center justify-center">
+
+    <div class="app-card w-full max-w-sm p-6 md:p-8">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-extrabold brand-blue-text mb-2">Like Dokan</h1>
+            <p class="text-gray-500 font-semibold">আপনার ডিজিটাল এঙ্গেজমেন্ট পার্টনার</p>
+        </header>
+
+        <form id="login-form">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">লগইন করুন</h2>
+            <div class="mb-4">
+                <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope mr-2"></i> ইমেইল
+                </label>
+                <input type="email" id="login-email" class="app-input w-full" required>
+            </div>
+            <div class="mb-6">
+                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-lock mr-2"></i> পাসওয়ার্ড
+                </label>
+                <input type="password" id="login-password" class="app-input w-full" required>
+            </div>
+            <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200">
+                লগইন
+            </button>
+            <a onclick="showRegister()" class="block text-center mt-4 text-sm font-semibold brand-blue-text hover:underline cursor-pointer">
+                অ্যাকাউন্ট নেই? সাইনআপ করুন
+            </a>
+        </form>
+
+        <form id="register-form" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">সাইনআপ করুন</h2>
+            <div class="mb-4">
+                <label for="register-email" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-envelope mr-2"></i> ইমেইল
+                </label>
+                <input type="email" id="register-email" class="app-input w-full" required>
+            </div>
+            <div class="mb-4">
+                <label for="register-password" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-lock mr-2"></i> পাসওয়ার্ড (৬+ অক্ষর)
+                </label>
+                <input type="password" id="register-password" class="app-input w-full" required>
+            </div>
+            <div class="mb-6">
+                <label for="referral-code" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user-plus mr-2"></i> রেফারেল কোড (ঐচ্ছিক)
+                </label>
+                <input type="text" id="referral-code" class="app-input w-full" placeholder="ঐচ্ছিক">
+            </div>
+            <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200">
+                সাইনআপ
+            </button>
+            <a onclick="showLogin()" class="block text-center mt-4 text-sm font-semibold brand-blue-text hover:underline cursor-pointer">
+                ইতিমধ্যেই অ্যাকাউন্ট আছে? লগইন করুন
+            </a>
+        </form>
+    </div>
+
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script type="module" src="./rtdb-config.js"></script>
+    <script type="module">
+        import { auth, rtdb as db, showNotification, set, ref, get, update, runTransaction } from './rtdb-config.js';
+        import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const initialPoints = 50;
+        const referralBonus = 25; // রেফারেল বোনাস পয়েন্ট
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = loginForm['login-email'].value;
+            const password = loginForm['login-password'].value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showNotification("লগইন সফল হয়েছে! আপনাকে ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে।", 'success');
+                setTimeout(() => { window.location.href = "index.html"; }, 1500); // পরিবর্তিত: xchange.html থেকে index.html
+            } catch (error) {
+                console.error("Login Error:", error);
+                showNotification("লগইন ব্যর্থ হয়েছে। ভুল ইমেইল বা পাসওয়ার্ড।", 'error');
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = registerForm['register-email'].value;
+            const password = registerForm['register-password'].value;
+            const referredBy = registerForm['referral-code'].value.trim();
+            let startingPoints = initialPoints;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Firestore-এর বদলে Realtime Database ব্যবহার করা হচ্ছে
+                const userRef = ref(db, 'users/' + user.uid);
+                
+                // ১. নতুন ব্যবহারকারীর ডেটা ইনিশিয়ালাইজ করা
+                const newUserInitialData = {
+                    email: email,
+                    points: initialPoints,
+                    tasksCreated: 0,
+                    tasksCompleted: 0,
+                    tasksRejected: 0,
+                    referredBy: referredBy,
+                    facebookName: null,
+                    isVerified: false,
+                    createdAt: Date.now(), // নতুন ফিল্ড যুক্ত করা হয়েছে
+                    role: 'user' // নতুন: ডিফল্ট রোল সেট করা হলো
+                };
+                
+                // ২. রেফারেল লজিক যাচাই ও পয়েন্ট প্রদান
+                if (referredBy && referredBy !== user.uid) {
+                    const referrerRef = ref(db, 'users/' + referredBy);
+                    const referrerSnapshot = await get(referrerRef);
+                    
+                    if (referrerSnapshot.exists()) {
+                        // রেফারেলকারীকে বোনাস পয়েন্ট দেওয়া
+                        await runTransaction(referrerRef, (currentData) => {
+                            if (currentData) {
+                                currentData.points = (currentData.points || 0) + referralBonus;
+                            }
+                            return currentData;
+                        });
+                        
+                        // নতুন ব্যবহারকারীকে বোনাস পয়েন্ট দেওয়া
+                        newUserInitialData.points += referralBonus;
+                        showNotification(`রেফারেল সফল! আপনি এবং ${referredBy} উভয়েই ${referralBonus} পয়েন্ট পেয়েছেন।`, 'info');
+                    } else {
+                        // যদি রেফারেল কোড ভুল হয়
+                        showNotification("রেফারেল কোডটি ভুল, কোনো বোনাস পয়েন্ট দেওয়া হয়নি।", 'info');
+                    }
+                }
+
+                // ৩. নতুন ব্যবহারকারীর ডেটা সেট করা
+                await set(userRef, newUserInitialData);
+
+                showNotification("সাইনআপ সফল হয়েছে! আপনাকে ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে।", 'success');
+                setTimeout(() => { window.location.href = "index.html"; }, 1500); // পরিবর্তিত: xchange.html থেকে index.html
+            } catch (error) {
+                console.error("Registration Error:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showNotification("এই ইমেইলটি ইতিমধ্যেই ব্যবহৃত হয়েছে।", 'error');
+                } else {
+                    showNotification("সাইনআপ ব্যর্থ হয়েছে।", 'error');
+                }
+            }
+        });
+
+        window.showLogin = () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+        };
+
+        window.showRegister = () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
+

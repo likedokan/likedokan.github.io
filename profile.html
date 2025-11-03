@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার প্রোফাইল</title>
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+        
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* ইনপুট স্টাইলিং */
+        .app-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .app-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .spinner {
+            border: 4px solid #e5e7eb;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal / Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: none; /* Initial state */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        /* Profile Card Styles */
+        .profile-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .avatar-circle {
+            width: 7rem;
+            height: 7rem;
+            border-radius: 9999px;
+            background-color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4b5563;
+            font-size: 3.5rem;
+            font-weight: bold;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-avatar img {
+            width: 7rem;
+            height: 7rem;
+            border-radius: 9999px;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ----- ভেরিফাইড ব্যাজ স্টাইল (পরিবর্তিত) ----- */
+        .verified-badge {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.5rem;
+            background-color: #1877F2; /* ফেসবুক ব্লু */
+            color: white; /* সাদা চেক-মার্ক */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* চেক-মার্ক আইকনের আকারের জন্য ফন্ট সাইজ */
+            font-size: 14px; 
+            font-weight: bold;
+            border: 2px solid white; /* নীল ব্যাজটিকে ঘিরে একটি সাদা স্ট্রোক */
+        }
+        
+        /* নিশ্চিত করুন যে ফন্ট-অসাম আইকনটি সঠিকভাবে সেন্টারে প্রদর্শিত হয় */
+        .verified-badge .fa-check { 
+            line-height: 1;
+        }
+        /* ----- ভেরিফাইড ব্যাজ স্টাইল শেষ ----- */
+
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .stat-item-points {
+            background-color: #e5f5f9;
+        }
+
+        .stat-item-points .stat-value {
+            color: #0d6efd;
+        }
+        
+        .stat-item-success {
+            background-color: #e6f9f0;
+        }
+        .stat-item-success .stat-value {
+            color: #10b981;
+        }
+
+        .stat-item-fail {
+            background-color: #fcebeb;
+        }
+        .stat-item-fail .stat-value {
+            color: #ef4444;
+        }
+        
+        /* --- নতুন স্টার রেটিং স্টাইল --- */
+        .rating-container {
+            /* নতুন কনটেইনারের স্টাইল - পুরো রেটিং অংশটিকে মাঝখানে রাখতে */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .rating-title {
+            /* "বিশ্বাসযোগ্যতা" লেখার স্টাইল */
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-bar {
+            /* স্টার এবং স্কোর একত্রে দেখানোর জন্য */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .star {
+            font-size: 1.25rem; /* তারার আকার */
+        }
+
+        .filled-star {
+            color: #ffc107; /* সোনালী রং */
+        }
+
+        .empty-star {
+            color: #e9ecef; /* খালি তারার জন্য হালকা ধূসর */
+        }
+        /* --- স্টার রেটিং স্টাইল শেষ --- */
+
+    </style>
+</head>
+
+<body class="p-4 flex flex-col items-center justify-center">
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>লোড হচ্ছে...</p>
+    </div>
+
+    <div class="container hidden" id="profile-container">
+        
+        <div class="app-card profile-card">
+            
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-avatar-container">
+                    </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800" id="userName">ব্যবহারকারী</h1>
+                    <p class="text-sm text-gray-500 mt-1">
+                        ইউজার আইডি: <span id="userIdDisplay" class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">user123</span>
+                    </p>
+                    <p class="text-gray-500 text-sm mt-1" id="userEmailDisplay"></p>
+                </div>
+                
+                <!-- বিশ্বাসযোগ্যতা রেটিং এর জন্য নতুন কন্টেইনার -->
+                <div class="rating-container">
+                    <!-- নতুন: "বিশ্বাসযোগ্যতা" লেখাটি উপরে দেখানো হচ্ছে -->
+                    <div class="rating-title">বিশ্বাসযোগ্যতা</div>
+                    
+                    <div class="rating-bar" id="credibilityRatingBar">
+                        <!-- JavaScript এখানে স্টার আইকনগুলো রেন্ডার করবে -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item stat-item-points">
+                    <div class="stat-value" id="userPoints">০</div>
+                    <div class="stat-label">পয়েন্ট</div>
+                </div>
+                <div class="stat-item stat-item-success">
+                    <div class="stat-value" id="successfulWorks">০</div>
+                    <div class="stat-label">সফল কাজ</div>
+                </div>
+                <div class="stat-item stat-item-fail">
+                    <div class="stat-value" id="failedWorks">০</div>
+                    <div class="stat-label">বাতিল কাজ</div>
+                </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <button class="bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-full hover:bg-gray-300 transition-all duration-200" onclick="showEditProfilePopup()">
+                    <i class="fas fa-edit mr-2"></i> প্রোফাইল এডিট করুন
+                </button>
+                <a href="index.html" class="inline-flex items-center brand-blue text-white font-bold py-2.5 px-6 rounded-full hover:bg-blue-700 transition-all duration-200 mt-4">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    ড্যাশবোর্ডে ফিরে যান
+                </a>
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="editProfilePopup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-button" onclick="closePopup()">&times;</span>
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">প্রোফাইল এডিট করুন</h2>
+            <form id="editProfileForm" class="space-y-4">
+                
+                <div class="form-group">
+                    <label for="profilePhoto" class="block text-sm font-medium text-gray-700 mb-2">
+                        প্রোফাইল ফটো আপলোড করুন
+                    </label>
+                    <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" class="app-input w-full">
+                </div>
+                
+                <div class="form-group">
+                    <label for="facebookName" class="block text-sm font-medium text-gray-700 mb-2">
+                        আপনার ফেসবুক আইডির পুরো নাম
+                    </label>
+                    <input type="text" id="facebookName" name="facebookName" class="app-input w-full" placeholder="যেমন: Shuvo Ahamed" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userEmailInput" class="block text-sm font-medium text-gray-700 mb-2">
+                        ইমেইল ঠিকানা
+                    </label>
+                    <input type="email" id="userEmailInput" name="userEmail" class="app-input w-full" placeholder="আপনার ইমেইল" readonly>
+                </div>
+                
+                <div id="facebookLinksContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ফেসবুক আইডির লিংক (গুলো)
+                    </label>
+                    </div>
+                
+                <button type="button" class="w-full bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-lg hover:bg-gray-300 transition-all duration-200" id="addLinkButton">
+                    <i class="fas fa-plus-circle mr-2"></i> আরো লিংক যুক্ত করুন
+                </button>
+
+                <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200">
+                    সেভ করুন
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="notification-container"></div>
+    
+
+<script type="module">
+    // NOTE: This setup assumes 'rtdb-config.js' contains the necessary Firebase Realtime Database and Auth setup exports.
+    import { auth, rtdb, showNotification, set, ref, update, onValue, get } from "./rtdb-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+    
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const profileContainer = document.getElementById('profile-container');
+    
+    let userId;
+
+    // ----------------------------------------------------------------------
+    // 🔥 Cloudinary কনফিগারেশন - আপনার দেওয়া তথ্য অনুযায়ী আপডেট করা হয়েছে
+    // ----------------------------------------------------------------------
+    const CLOUDINARY_CLOUD_NAME = 'deqeko2ny'; 
+    const CLOUDINARY_UPLOAD_PRESET = 'Profilepicture'; 
+    const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+    // ----------------------------------------------------------------------
+
+    window.closePopup = () => {
+        document.getElementById('editProfilePopup').style.display = 'none';
+    };
+
+    window.showEditProfilePopup = async () => {
+        if (!userId) return;
+        const userProfileRef = ref(rtdb, `users/${userId}`);
+        const snapshot = await get(userProfileRef);
+        const data = snapshot.val();
+        
+        if (data) {
+            document.getElementById('facebookName').value = data.facebookName || '';
+            document.getElementById('userEmailInput').value = auth.currentUser.email || 'ইমেইল নেই';
+            
+            const linksContainer = document.getElementById('facebookLinksContainer');
+            linksContainer.innerHTML = `
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    ফেসবুক আইডির লিংক (গুলো)
+                </label>`;
+            
+            const currentLinks = Array.isArray(data.facebookLinks) 
+                                ? data.facebookLinks 
+                                : Object.values(data.facebookLinks || {});
+
+            if (currentLinks.length > 0 && currentLinks[0] !== '#') {
+                currentLinks.forEach(link => {
+                    if (link && link.trim() !== '') {
+                         addLinkInput(linksContainer, link);
+                    }
+                });
+            } else {
+                addLinkInput(linksContainer, '');
+            }
+        }
+        document.getElementById('editProfilePopup').style.display = 'flex';
+    };
+    
+    function addLinkInput(container, value = '') {
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.name = 'facebookLink';
+        input.value = value;
+        input.className = 'app-input w-full mb-2';
+        input.placeholder = 'আপনার ফেসবুক প্রোফাইল লিংক';
+        container.appendChild(input);
+    }
+    
+    document.getElementById('addLinkButton').addEventListener('click', function() {
+        const linksContainer = document.getElementById('facebookLinksContainer');
+        addLinkInput(linksContainer, '');
+    });
+
+    // Cloudinary তে ছবি আপলোডের ফাংশন
+    async function uploadToCloudinary(file) {
+        if (!file) return null;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        // Cloudinary-তে ইউজার আইডি দিয়ে একটি সাব-ফোল্ডার তৈরি করার জন্য 
+        // আপনার প্রিসেটে 'engagehub' সেট করা আছে, তাই ফোল্ডার হবে: engagehub/user_profiles/{userId}
+        formData.append('folder', `user_profiles/${userId}`); 
+
+        try {
+            showNotification("ছবি আপলোড শুরু হচ্ছে...", 'info');
+            const response = await fetch(CLOUDINARY_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Cloudinary Error:", errorData);
+                throw new Error(`Cloudinary আপলোড ব্যর্থ: ${errorData.error.message || response.statusText}`);
+            }
+
+            const data = await response.json();
+            showNotification("ছবি সফলভাবে আপলোড হয়েছে!", 'success');
+            return data.secure_url; // আপলোড করা ছবির URL
+        } catch (error) {
+            // ত্রুটি হলে এখানে ধরা পড়বে এবং নোটিফিকেশন দেখানো হবে
+            console.error("Error during Cloudinary upload:", error);
+            showNotification(`ছবি আপলোড ব্যর্থ হয়েছে।`, 'error');
+            throw error; 
+        }
+    }
+
+
+    document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // সেভ বোতাম নিষ্ক্রিয় করুন যাতে একাধিকবার সাবমিট না হয়
+        const saveButton = this.querySelector('button[type="submit"]');
+        saveButton.disabled = true;
+        saveButton.textContent = 'সেভ হচ্ছে...';
+
+        try {
+            const newFacebookLinks = Array.from(document.querySelectorAll('#facebookLinksContainer input[name="facebookLink"]'))
+                                    .map(input => input.value)
+                                    .filter(link => link.trim() !== '');
+
+            const profilePhotoFile = document.getElementById('profilePhoto').files[0];
+            let profilePhotoUrl = '';
+
+            if (profilePhotoFile) {
+                // Cloudinary তে ছবি আপলোড করুন
+                profilePhotoUrl = await uploadToCloudinary(profilePhotoFile);
+            }
+            
+            const newData = {
+                facebookName: document.getElementById('facebookName').value,
+                // স্ট্রিং বা অ্যারে ছাড়া অন্য ডেটা RTDB-তে সেভ করলে তা Object হিসেবে সেভ হয়।
+                facebookLinks: newFacebookLinks.length > 0 ? newFacebookLinks : ['#']
+            };
+
+            if (profilePhotoUrl) {
+                newData.profilePhotoUrl = profilePhotoUrl;
+            }
+            
+            const userProfileRef = ref(rtdb, `users/${userId}`);
+            
+            await update(userProfileRef, newData); 
+            showNotification("প্রোফাইল সফলভাবে আপডেট করা হয়েছে!", 'success');
+
+            closePopup();
+
+        } catch (error) {
+            // Cloudinary আপলোডে এরর হলে catch হবে এবং নোটিফিকেশন দেখানো হবে
+            // কিন্তু RTDB আপলোডেও এরর হলে এখানে catch হবে
+            console.error("Error during profile update:", error);
+            // যদি আপলোড ব্যর্থ হয়, তাহলে আলাদা করে নোটিফিকেশন দেওয়ার প্রয়োজন নেই কারণ Cloudinary ফাংশন নিজেই এটি করে
+            if (!error.message.includes('Cloudinary')) { 
+                 showNotification("প্রোফাইল আপডেট ব্যর্থ হয়েছে।", 'error');
+            }
+        } finally {
+            // সেভ বোতাম আবার সক্রিয় করুন
+            saveButton.disabled = false;
+            saveButton.textContent = 'সেভ করুন';
+        }
+    });
+    
+    // ======================================================================
+    // 🔥 বিশ্বাসযোগ্যতা রেটিং গণনা এবং রেন্ডার করার ফাংশন
+    // ======================================================================
+
+    // ফাংশন: সফল ও বাতিল কাজের উপর ভিত্তি করে ৫-স্টার রেটিং গণনা করে
+    function calculateRating(completed, rejected) {
+        const total = completed + rejected;
+        if (total === 0) {
+            // যদি কোনো কাজ না করে থাকে, তবে ডিফল্ট রেটিং ৩.০ দিতে পারি বা ০ দিতে পারি।
+            // বিশ্বাসযোগ্যতা বোঝাতে এখানে ৩.০ রাখা হলো।
+            return 3.0; 
+        }
+        // সফল কাজের হারকে ৫ দিয়ে গুণ করে রেটিং তৈরি করা
+        const successRate = completed / total;
+        // রেটিং ০ থেকে ৫ এর মধ্যে থাকবে, এক দশমিক স্থান পর্যন্ত রাখা হবে
+        const rating = parseFloat((5 * successRate).toFixed(1));
+        return rating;
+    }
+
+    // ফাংশন: স্কোর অনুযায়ী স্টার আইকন রেন্ডার করে
+    function renderStarRating(score) {
+        const ratingBar = document.getElementById('credibilityRatingBar');
+        if (!ratingBar) return;
+
+        ratingBar.innerHTML = ''; // পূর্বের স্টার মুছে ফেলুন
+        
+        // নিকটতম অর্ধ-স্টার (0.5) এ রাউন্ড করা হবে
+        const roundedScore = Math.round(score * 2) / 2; 
+
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            if (roundedScore >= i) {
+                // পূর্ণ স্টার
+                html += `<i class="fas fa-star star filled-star"></i>`;
+            } else if (roundedScore === i - 0.5) {
+                // অর্ধ স্টার (fa-star-half-alt বা fa-star-half ব্যবহার করা যেতে পারে)
+                html += `<i class="fas fa-star-half-alt star filled-star"></i>`;
+            } else {
+                // খালি স্টার
+                html += `<i class="far fa-star star empty-star"></i>`;
+            }
+        }
+        
+        // রেটিং স্কোর টেক্সট সহ বিশ্বাসযোগ্যতা স্কোর যোগ করা
+        html += `<span class="text-lg font-bold ml-2 text-gray-800">(${score.toFixed(1)} / 5)</span>`;
+        // "বিশ্বাসযোগ্যতা" লেখাটি HTML-এ আলাদা div-এ সরানো হয়েছে, তাই এখানে আর দরকার নেই
+        ratingBar.innerHTML = html;
+    }
+    
+    // ======================================================================
+    // 🔥 মূল প্রোফাইল UI আপডেট ফাংশন
+    // ======================================================================
+    
+    // Function to update the profile display elements
+    function updateProfileUI(data) {
+        const profileAvatarContainer = document.getElementById('profile-avatar-container');
+        profileAvatarContainer.innerHTML = '';
+        
+        // Avatar setup
+        const avatarElement = document.createElement(data.profilePhotoUrl ? 'img' : 'div');
+        if (data.profilePhotoUrl) {
+             // Cloudinary URL থাকলে <img src="..."> ব্যবহার করুন
+            avatarElement.src = data.profilePhotoUrl; 
+            avatarElement.alt = data.facebookName;
+            avatarElement.className = 'profile-avatar';
+        } else {
+             // Cloudinary URL না থাকলে ডিফল্ট Avatar ব্যবহার করুন
+            avatarElement.className = 'avatar-circle';
+            avatarElement.textContent = (data.facebookName ? data.facebookName.charAt(0) : 'A').toUpperCase();
+        }
+        profileAvatarContainer.appendChild(avatarElement);
+
+        // Verified Badge setup (Icon changed to look like Facebook)
+        const verifiedBadge = document.createElement('span');
+        verifiedBadge.className = 'verified-badge';
+        
+        // ফেসবুকের মতো দেখতে করার জন্য: নীল ব্যাকগ্রাউন্ডের মধ্যে সাদা '✓' চিহ্ন ব্যবহার করা হয়েছে।
+        // এর জন্য fa-check আইকনটি ব্যবহার করা হয়েছে।
+        verifiedBadge.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i>'; 
+
+        if (data.isVerified) {
+            profileAvatarContainer.appendChild(verifiedBadge);
+        }
+        
+        // ডেটা থেকে সফল ও বাতিল কাজের সংখ্যা নিন
+        const completedWorks = data.tasksCompleted || 0;
+        const rejectedWorks = data.tasksRejected || 0;
+
+        // Update Stats
+        document.getElementById('userName').textContent = data.facebookName || 'নাম নেই';
+        document.getElementById('userPoints').textContent = (data.points || 0).toLocaleString('bn-BD');
+        
+        document.getElementById('successfulWorks').textContent = completedWorks.toLocaleString('bn-BD');
+        document.getElementById('failedWorks').textContent = rejectedWorks.toLocaleString('bn-BD');
+        
+        // নতুন: বিশ্বাসযোগ্যতা রেটিং গণনা এবং রেন্ডার করুন
+        const ratingScore = calculateRating(completedWorks, rejectedWorks);
+        renderStarRating(ratingScore);
+        
+    }
+    
+    // Firebase Auth State Listener
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = 'login.html'; // যদি ইউজার লগইন না করে, তবে লগইন পেজে পাঠান
+            return;
+        }
+
+        userId = user.uid;
+        document.getElementById('userIdDisplay').textContent = userId;
+        document.getElementById('userEmailDisplay').textContent = user.email || 'ইমেইল নেই';
+        
+        const userProfileRef = ref(rtdb, `users/${userId}`);
+        
+        // Realtime listener for user profile data
+        onValue(userProfileRef, (snapshot) => {
+            const data = snapshot.val();
+            
+            if (data) {
+                updateProfileUI(data);
+            } else {
+                // Create default profile if it doesn't exist
+                const defaultData = {
+                    facebookName: user.email ? user.email.split('@')[0] : 'ব্যবহারকারী',
+                    email: user.email || 'ইমেইল নেই',
+                    facebookLinks: ['#'],
+                    isVerified: false,
+                    tasksCreated: 0,
+                    tasksCompleted: 0,
+                    tasksRejected: 0,
+                    points: 0,
+                    profilePhotoUrl: ''
+                };
+                set(userProfileRef, defaultData)
+                    .then(() => console.log("Default profile created in RTDB."))
+                    .catch((error) => console.error("Error creating default profile in RTDB:", error));
+            }
+            loadingOverlay.classList.add('hidden');
+            profileContainer.classList.remove('hidden');
+        });
+    });
+    
+</script>
+
+</body>
+</html>
+

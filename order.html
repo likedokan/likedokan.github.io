@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>নতুন অর্ডার তৈরি করুন</title>
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+            transition: background-color 0.2s;
+        }
+        
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* ইনপুট স্টাইলিং */
+        .app-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .app-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* নোটিফিকেশন স্টাইলিং */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.info { background-color: #3b82f6; }
+        .notification.success { background-color: #10b981; }
+        .notification.error { background-color: #ef4444; }
+        
+        /* টাস্ক স্ট্যাটাস ব্যাজ স্টাইল */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active { background-color: #d1fae5; color: #059669; } /* Green */
+        .status-completed { background-color: #bfdbfe; color: #1d4ed8; } /* Blue */
+        .status-closed { background-color: #fee2e2; color: #dc2626; } /* Red */
+
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center justify-center">
+    
+    <div class="container max-w-2xl w-full">
+
+        <header class="app-card p-6 text-center mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-plus-circle text-blue-500 text-3xl md:text-4xl"></i>
+                নতুন কাজ তৈরি করুন
+            </h1>
+            <p class="text-gray-500 font-semibold mt-2">আপনার ডিজিটাল এঙ্গেজমেন্ট বাড়ান!</p>
+        </header>
+
+        <main class="app-card p-4 md:p-6 mb-8">
+            <p class="points-display text-center text-lg font-bold mb-6">
+                আপনার বর্তমান পয়েন্ট: <span id="current-points" class="brand-blue-text">০</span>
+            </p>
+
+            <form id="createOrderForm" class="space-y-4">
+                
+                <div class="form-group text-left">
+                    <label for="taskType" class="block text-sm font-medium text-gray-700 mb-2">
+                        কাজের ধরণ:
+                    </label>
+                    <select id="taskType" name="taskType" class="app-input w-full">
+                        <!-- স্থির পয়েন্ট খরচ এখন অপশনের নামের সাথে দেখানো হচ্ছে -->
+                        <option value="like">ফেসবুক লাইক (২ পয়েন্ট)</option>
+                        <option value="comment">ফেসবুক কমেন্ট (৩ পয়েন্ট)</option>
+                        <option value="share">ফেসবুক শেয়ার (৫ পয়েন্ট)</option>
+                        <option value="follow">ফেসবুক ফলো (৪ পয়েন্ট)</option>
+                        <option value="group">ফেসবুক গ্রুপ জয়েন (৬ পয়েন্ট)</option>
+                    </select>
+                </div>
+                
+                <!-- নতুন: স্থির পয়েন্ট খরচ প্রদর্শন -->
+                <div class="bg-red-50 p-4 rounded-lg text-left border border-red-200">
+                    <label class="block text-sm font-semibold text-red-700 mb-1">
+                        পয়েন্ট খরচ (প্রতিটি কাজের জন্য):
+                    </label>
+                    <span id="per-task-cost-display" class="text-2xl font-extrabold text-red-600">২</span>
+                    <span class="text-lg text-red-700">পয়েন্ট</span>
+                    <!-- লুকানো ইনপুট, যার মাধ্যমে JavaScript মানটি ধরে রাখবে এবং ফর্মে যাবে -->
+                    <input type="hidden" id="taskPoints" name="taskPoints" value="2">
+                </div>
+                
+                <div class="form-group text-left">
+                    <label for="taskLink" class="block text-sm font-medium text-gray-700 mb-2">
+                        ফেসবুক লিংক:
+                    </label>
+                    <!-- 🔥 পরিবর্তন: type="text" করা হয়েছে যাতে https:// না লিখলেও সমস্যা না হয় -->
+                    <input type="text" id="taskLink" name="taskLink" class="app-input w-full" placeholder="পোস্ট/ভিডিও/পেজ এর লিংক" required>
+                    <p class="text-xs text-gray-500 mt-1">আপনি শুধু ডোমেইন দিয়েও লিংক লিখতে পারেন (যেমন: facebook.com/post123), স্বয়ংক্রিয়ভাবে 'https://' যুক্ত হবে।</p>
+                </div>
+                
+                <div class="form-group text-left">
+                    <label for="taskQuantity" class="block text-sm font-medium text-gray-700 mb-2">
+                        পরিমাণ (কতগুলো লাগবে):
+                    </label>
+                    <input type="number" id="taskQuantity" name="taskQuantity" min="1" value="10" class="app-input w-full" required>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg text-center font-bold">
+                    মোট খরচ: <span id="total-cost-display" class="brand-blue-text">০</span> পয়েন্ট
+                </div>
+
+                <button type="submit" class="w-full brand-blue text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition duration-200" id="submit-button">
+                    অর্ডার তৈরি করুন
+                </button>
+            </form>
+        </main>
+        
+        <section class="app-card p-4 md:p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
+                📋 আপনার তৈরি করা কাজ (অর্ডার হিস্ট্রি)
+            </h2>
+            <div id="order-history-list" class="space-y-4">
+                <p class="text-center text-gray-500" id="history-loading-message">অর্ডার লোড হচ্ছে...</p>
+            </div>
+        </section>
+        <div class="text-center mt-4">
+            <a href="index.html" class="inline-flex items-center bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                ড্যাশবোর্ডে ফিরে যান
+            </a>
+        </div>
+    </div>
+    
+    <div id="notification-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    
+    <script type="module" src="./rtdb-config.js"></script>
+    <script type="module">
+        import { auth, rtdb as db, showNotification, set, ref, get, update, push, runTransaction, onValue, query, orderByChild, equalTo } from "./rtdb-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"; 
+        
+        // স্থির পয়েন্ট খরচ তালিকা
+        const FIXED_POINT_COSTS = {
+            'like': 2,    // পোস্ট বা পেজে ১টা লাইক
+            'comment': 3, // নির্দিষ্টভাবে কমেন্ট করা
+            'share': 5,   // নিজের টাইমলাইনে বা গ্রুপে শেয়ার
+            'follow': 4,  // পেজ বা প্রোফাইল ফলো করা
+            'group': 6    // নির্দিষ্ট গ্রুপে যোগদান
+        };
+
+        // DOM রেফারেন্স
+        const currentPointsDisplay = document.getElementById('current-points');
+        const totalCostDisplay = document.getElementById('total-cost-display');
+        const form = document.getElementById('createOrderForm');
+        // taskPointsInput এখন লুকানো ইনপুট, taskTypeInput নতুনভাবে সংজ্ঞায়িত
+        const taskTypeInput = document.getElementById('taskType');
+        const taskPointsInput = document.getElementById('taskPoints'); // Hidden input
+        const perTaskCostDisplay = document.getElementById('per-task-cost-display'); // New display element
+        const taskQuantityInput = document.getElementById('taskQuantity');
+        const orderHistoryList = document.getElementById('order-history-list'); 
+        const historyLoadingMessage = document.getElementById('history-loading-message'); 
+        
+        let userId = null; 
+        let userRef = null;
+
+        /**
+         * টাস্ক টাইপ পরিবর্তন হলে স্থির পয়েন্ট খরচ আপডেট করে।
+         */
+        const updateTaskCostDisplay = () => {
+            const selectedTaskType = taskTypeInput.value;
+            const cost = FIXED_POINT_COSTS[selectedTaskType] || 0;
+            
+            // লুকানো ইনপুট এবং ডিসপ্লে আপডেট করা
+            taskPointsInput.value = cost; 
+            perTaskCostDisplay.textContent = cost.toLocaleString('bn-BD'); 
+            
+            calculateTotalCost();
+        };
+
+        const calculateTotalCost = () => {
+            // taskPointsInput এখন hidden, এবং এর মান FIXED_POINT_COSTS থেকে আসে
+            const points = parseInt(taskPointsInput.value) || 0;
+            const quantity = parseInt(taskQuantityInput.value) || 0;
+            const total = points * quantity;
+            totalCostDisplay.textContent = total.toLocaleString('bn-BD');
+        };
+
+        // নতুন লিসেনার: টাস্ক টাইপ পরিবর্তন হলে খরচ আপডেট করা
+        taskTypeInput.addEventListener('change', updateTaskCostDisplay);
+        // বিদ্যমান লিসেনার রাখা
+        taskQuantityInput.addEventListener('input', calculateTotalCost);
+        
+        
+        /**
+         * ইনপুট করা লিংককে HTTP/HTTPS প্রোটোকল সহ পূর্ণাঙ্গ লিংকে রূপান্তর করে।
+         * @param {string} link - ব্যবহারকারী কর্তৃক ইনপুট করা লিংক
+         * @returns {string} - প্রোটোকলসহ পূর্ণাঙ্গ লিংক
+         */
+        const normalizeLink = (link) => {
+            let normalized = link.trim();
+            
+            // যদি লিংকটি ফাকা না হয় এবং http/https/ftp দিয়ে শুরু না হয়, তবে https:// যোগ করা হবে
+            if (normalized && !normalized.match(/^(f|ht)tps?:\/\//i)) {
+                normalized = 'https://' + normalized;
+            }
+            return normalized;
+        };
+
+        /**
+         * টাস্ক স্ট্যাটাস অনুযায়ী ব্যাজ তৈরি করে।
+         * @param {string} status - টাস্কের স্ট্যাটাস ('active', 'completed', 'closed')
+         */
+        const getStatusBadge = (status) => {
+            switch(status) {
+                case 'active':
+                    return '<span class="status-badge status-active"><i class="fas fa-running mr-1"></i> সক্রিয়</span>';
+                case 'completed':
+                    return '<span class="status-badge status-completed"><i class="fas fa-flag-checkered mr-1"></i> সম্পন্ন</span>';
+                case 'closed':
+                    return '<span class="status-badge status-closed"><i class="fas fa-times-circle mr-1"></i> বন্ধ</span>';
+                default:
+                    return '<span class="status-badge bg-gray-200 text-gray-700">অজানা</span>';
+            }
+        };
+
+        /**
+         * ইউজারের তৈরি করা টাস্কগুলো প্রদর্শন করে।
+         * @param {Array<Object>} tasks - ইউজারের তৈরি করা টাস্কগুলোর অ্যারে
+         */
+        const displayOrderHistory = (tasks) => {
+            orderHistoryList.innerHTML = '';
+            historyLoadingMessage.classList.add('hidden'); 
+
+            if (tasks.length === 0) {
+                orderHistoryList.innerHTML = '<p class="text-center text-gray-500 py-6">আপনি এখনো কোনো কাজ তৈরি করেননি।</p>';
+                return;
+            }
+            
+            // নতুন টাস্ক প্রথমে দেখানোর জন্য সর্ট করা
+            tasks.sort((a, b) => b.createdAt - a.createdAt);
+
+            tasks.forEach(task => {
+                const totalCost = task.pointsPerTask * task.quantity;
+                const completedPercentage = task.quantity > 0 ? Math.round((task.completedCount || 0) / task.quantity * 100) : 100;
+                const statusBadge = getStatusBadge(task.status);
+
+                const taskCard = `
+                    <div class="app-card p-5">
+                        <div class="flex justify-between items-start mb-4 pb-4 border-b">
+                            <div>
+                                <h4 class="text-xl font-semibold text-gray-800">${task.taskType} টাস্ক</h4>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    অর্ডার আইডি: <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">${task.id.substring(0, 10)}...</span>
+                                </p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                            <p>
+                                <i class="fas fa-coins text-yellow-500 mr-2"></i>
+                                মোট খরচ: <span class="font-bold text-gray-800">${totalCost.toLocaleString('bn-BD')}</span> পয়েন্ট
+                            </p>
+                            <p>
+                                <i class="fas fa-bullseye text-blue-500 mr-2"></i>
+                                মোট লক্ষ্য: <span class="font-bold text-gray-800">${task.quantity.toLocaleString('bn-BD')} টি</span>
+                            </p>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mb-4">
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-check-double text-green-500 mr-2"></i>
+                                সফলভাবে সম্পন্ন: <span class="font-bold text-green-600">${(task.completedCount || 0).toLocaleString('bn-BD')} টি</span>
+                            </p>
+                            <span class="text-sm font-bold text-gray-700">${completedPercentage}%</span>
+                        </div>
+                        
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                            <div class="bg-green-600 h-2.5 rounded-full" style="width: ${completedPercentage}%"></div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <a href="${task.taskLink}" target="_blank" class="flex-1 text-center bg-gray-200 text-gray-700 py-2 rounded-lg font-bold text-sm hover:bg-gray-300 transition duration-200">
+                                <i class="fas fa-link mr-1"></i> টাস্ক লিংক
+                            </a>
+                            <a href="review_prof.html?taskId=${task.id}" class="flex-1 text-center brand-blue text-white py-2 rounded-lg font-bold text-sm hover:brightness-110 transition duration-200">
+                                <i class="fas fa-file-circle-check mr-1"></i> প্রুফ যাচাই
+                            </a>
+                        </div>
+                    </div>
+                `;
+                orderHistoryList.insertAdjacentHTML('beforeend', taskCard);
+            });
+        };
+
+
+        /**
+         * ইউজারের তৈরি করা টাস্কগুলোর জন্য রিয়েলটাইম লিসেনার সেট করে।
+         * @param {string} currentUserId - বর্তমান ইউজারের UID
+         */
+        const listenForUserTasks = (currentUserId) => {
+            const tasksRef = ref(db, 'tasks');
+            // ownerId ফিল্ডের উপর ভিত্তি করে ফিল্টারিং কোয়েরি তৈরি করা হলো
+            const userTasksQuery = query(tasksRef, orderByChild('ownerId'), equalTo(currentUserId));
+            
+            onValue(userTasksQuery, (snapshot) => {
+                const tasksData = snapshot.val() || {};
+                const tasksArray = Object.keys(tasksData).map(key => ({ id: key, ...tasksData[key] }));
+                
+                displayOrderHistory(tasksArray);
+                
+            }, (error) => {
+                console.error("User tasks load error:", error);
+                historyLoadingMessage.textContent = 'অর্ডার লোড করতে সমস্যা হয়েছে।';
+            });
+        };
+
+        // Firebase Auth State Listener ব্যবহার করা
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html"; 
+                return;
+            }
+
+            userId = user.uid; 
+            userRef = ref(db, `users/${userId}`); 
+            
+            // প্রাথমিক লোডের সময় একবার কল করা
+            updateTaskCostDisplay();
+
+            // ইউজার টাস্ক লিসেনার চালু করা
+            listenForUserTasks(userId); 
+
+            // ব্যবহারকারীর পয়েন্ট রিয়েলটাইমে লোড করা
+            onValue(userRef, (snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    currentPointsDisplay.textContent = (userData.points || 0).toLocaleString('bn-BD');
+                    calculateTotalCost(); 
+                } else {
+                    currentPointsDisplay.textContent = '০';
+                }
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const taskType = form['taskType'].value;
+                const taskLinkRaw = form['taskLink'].value; // 🔥 পরিবর্তন: raw input নেওয়া হলো
+                // taskPoints এখন লুকানো ইনপুট থেকে আসছে, এবং এর মান FIXED_POINT_COSTS থেকে ডাইনামিকভাবে সেট করা
+                const taskPoints = parseInt(form['taskPoints'].value);
+                const taskQuantity = parseInt(form['taskQuantity'].value);
+                const totalCost = taskPoints * taskQuantity;
+                
+                // 🔥 নতুন: লিংক নরমালাইজ করা হলো
+                const taskLink = normalizeLink(taskLinkRaw); 
+
+                try {
+                    const userSnapshot = await get(userRef);
+                    const currentPoints = userSnapshot.val().points || 0;
+
+                    if (currentPoints < totalCost) {
+                        showNotification('আপনার পর্যাপ্ত পয়েন্ট নেই।', 'error');
+                        return;
+                    }
+                    
+                    // 🔥 ভ্যালিডেশন: লিংকটি যেন ফাকা না থাকে
+                    if (taskLink.trim() === 'https://') {
+                         showNotification('অনুগ্রহ করে একটি সঠিক ফেসবুক লিংক দিন।', 'error');
+                         return;
+                    }
+
+
+                    // ১. ট্রানজেকশনের মাধ্যমে পয়েন্ট কাটা
+                    const transactionResult = await runTransaction(userRef, (currentData) => {
+                        if (currentData) {
+                            if ((currentData.points || 0) >= totalCost) {
+                                currentData.points = (currentData.points || 0) - totalCost;
+                                currentData.tasksCreated = (currentData.tasksCreated || 0) + 1;
+                            } else {
+                                return; 
+                            }
+                        }
+                        return currentData;
+                    });
+
+                    if (!transactionResult || !transactionResult.committed) {
+                        showNotification('পয়েন্ট কাটতে ব্যর্থ।', 'error');
+                        return;
+                    }
+                    
+                    // ২. টাস্ক ডেটাবেসে কাজ তৈরি করা
+                    const tasksListRef = ref(db, 'tasks');
+                    const newTaskRef = push(tasksListRef);
+                    const taskId = newTaskRef.key;
+
+                    const newTaskData = {
+                        id: taskId,
+                        ownerId: userId,
+                        taskType: taskType,
+                        taskLink: taskLink, // 🔥 পরিবর্তিত লিংক ব্যবহার করা হলো
+                        pointsPerTask: taskPoints,
+                        quantity: taskQuantity,
+                        completedCount: 0, 
+                        proofs: {},
+                        status: 'active',
+                        createdAt: Date.now()
+                    };
+                    await set(newTaskRef, newTaskData);
+                    
+                    showNotification('কাজটি সফলভাবে তৈরি হয়েছে! আপনার হিস্টরিতে দেখুন।', 'success');
+                    form.reset();
+                    
+                } catch (error) {
+                    console.error("কাজ তৈরি করতে ব্যর্থ: ", error);
+                    showNotification(`কাজ তৈরি করতে সমস্যা হয়েছে: ${error.message || 'অজানা ত্রুটি'}`, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
