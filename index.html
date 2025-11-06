@@ -59,10 +59,11 @@
             border-bottom: 1px solid #e9ecef;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-
-        /* কন্টেন্ট প্যাডিং */
-        .content-margin{
-            margin-top: 6rem;
+        
+        /* কন্টেন্ট প্যাডিং - শুধুমাত্র প্রাথমিক স্পেসের জন্য, ডাইনামিক মার্জিন JS এ হ্যান্ডেল করা হবে */
+        #main-content-container {
+            padding-top: 1rem; /* হেডার এর নিচে সামান্য স্পেস */
+            transition: margin-top 0.3s ease-out; /* মার্জিনের মসৃণ ট্রানজিশন */
         }
 
         /* ইনপুট স্টাইলিং */
@@ -98,15 +99,15 @@
             color: #333;
             font-size: 1.25rem;
             font-weight: 600;
-            opacity: 1; /* ডিফল্টরূপে দৃশ্যমান */
-            pointer-events: all; /* ইন্টারঅ্যাকশন ব্লক করা */
-            transition: opacity 0.5s ease-out; /* মসৃণ ট্রানজিশন যোগ করা হলো */
+            opacity: 1; 
+            pointer-events: all; 
+            transition: opacity 0.5s ease-out; 
         }
         
         /* ওভারলে অদৃশ্য করার জন্য নতুন ক্লাস */
         #loading-overlay.fade-out {
             opacity: 0;
-            pointer-events: none; /* অদৃশ্য হওয়ার পর ইন্টারঅ্যাকশন চালু করা */
+            pointer-events: none; 
         }
 
         .spinner {
@@ -160,10 +161,41 @@
             object-fit: cover;
         }
         /* --- ছোট স্টার রেটিং স্টাইল শেষ --- */
+
+        /* 🔥 নতুন: সাসপেনশন হলে ব্লার ও ব্লক */
+        .content-suspended {
+            pointer-events: none;
+            filter: blur(4px) grayscale(50%); /* একটু বেশি ব্লার */
+            user-select: none;
+        }
+        
+        /* 🔥 আপডেট: ট্রাস্ট নোটিশ বোর্ড স্টাইল */
+        #trust-notice-board {
+            position: fixed;
+            top: 64px; /* হেডার এর নিচে */
+            left: 0;
+            right: 0;
+            z-index: 45; /* হেডার (z-50) এর নিচে */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        /* 🔥 সাসপেনশন মোডের জন্য নোটিশ বোর্ডের কালার */
+        #trust-notice-board.suspended-mode {
+            background-color: #fef2f2; /* লাল ব্যাকগ্রাউন্ড */
+            border-bottom: 2px solid #ef4444; /* লাল বর্ডার */
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2); /* লাল শ্যাডো */
+            cursor: not-allowed;
+            pointer-events: all; /* শুধু নোটিশ বোর্ডটি ইন্টারঅ্যাক্টিভ থাকবে */
+            z-index: 100; /* 🔥 ফিক্স: পেজ ব্লার হলেও নোটিশ বোর্ডটি উপরে থাকবে */
+        }
     </style>
 </head>
 <body>
     
+    <!-- 🔥 সাসপেনশন মডালটি সম্পূর্ণ মুছে ফেলা হলো -->
+
     <!-- লোডিং ওভারলে -->
     <div id="loading-overlay">
         <div class="spinner"></div>
@@ -171,7 +203,7 @@
     </div>
 
     <!-- হেডার -->
-    <header class="fixed-header">
+    <header class="fixed-header" id="app-header">
         <div class="container max-w-6xl mx-auto px-4 py-3 flex justify-between items-center h-16">
             
             <!-- লোগো এবং টাইটেল -->
@@ -188,6 +220,9 @@
                 </div>
                 
                 <!-- নেভিগেশন বাটন -->
+                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="রিপোর্ট ও নির্দেশিকা" onclick="window.location.href='report.html'">
+                    <i class="fas fa-info-circle text-lg"></i>
+                </button>
                 <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="প্রোফাইল" onclick="window.location.href='profile.html'">
                     <i class="fas fa-user text-lg"></i>
                 </button>
@@ -198,8 +233,26 @@
         </div>
     </header>
 
+    <!-- ট্রাস্ট স্কোর / সাসপেনশন নোটিশ বোর্ড (একই ইলিমেন্ট) -->
+    <!-- 🔥 কন্টেন্ট ডিসপ্লে করার জন্য নতুন আইডি যুক্ত করা হলো -->
+    <div id="trust-notice-board" class="hidden fixed z-40 py-2 bg-red-100 border-b-2 border-red-500 shadow-lg transition-all duration-300">
+        <div class="container max-w-4xl mx-auto px-4 text-center">
+            <!-- ওয়ার্নিং/সাসপেনশন মেসেজ এখানে ডিসপ্লে হবে -->
+            <p id="notice-message" class="text-sm font-semibold text-red-800">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                আপনার trust Score কম। সঠিকভাবে কাজ করুন নাহলে আপনার একাউন্ট সাসপেন্ড করা হবে।
+            </p>
+            
+            <!-- 🔥 সাসপেনশন কাউন্টডাউন ও কারণ ডিসপ্লে -->
+            <div id="suspension-details" class="hidden mt-1 flex flex-col md:flex-row justify-center items-center text-xs md:text-sm font-bold text-red-900 space-y-1 md:space-y-0 md:space-x-4">
+                <p><i class="fas fa-clock mr-1"></i> বাকি সময়: <span id="suspend-countdown-display">হিসাব করা হচ্ছে...</span></p>
+                <p><i class="fas fa-gavel mr-1"></i> কারণ: <span id="suspend-reason-display"></span></p>
+            </div>
+        </div>
+    </div>
+    
     <!-- প্রধান কন্টেন্ট -->
-    <div class="container max-w-4xl mx-auto px-4 content-margin hidden" id="main-content-container">
+    <div class="container max-w-4xl mx-auto px-4 mt-2 hidden" id="main-content-container">
         
         <main>
             <!-- দ্রুত অ্যাকশন কার্ড (Quick Actions Card) -->
@@ -207,7 +260,7 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
                     ⚙️ দ্রুত অ্যাকশন
                 </h2>
-                <!-- নতুন: গ্রিড ২x২ (মোবাইল) এবং ৪x১ (ডেস্কটপ) -->
+                <!-- 🔥 আপডেট: ৪টি বাটন দেখানোর জন্য গ্রিড ঠিক করা হয়েছে -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <a href="order.html" class="block brand-blue text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:shadow-xl hover:brightness-110 transform transition duration-300 shadow-md">
                         <i class="fas fa-plus-circle block md:hidden mb-1"></i> 
@@ -221,9 +274,9 @@
                          <i class="fas fa-crown block md:hidden mb-1"></i>
                          <span class="hidden md:inline"><i class="fas fa-crown mr-1"></i></span> লিডারবোর্ড
                     </a>
-                    <a href="referral.html" class="block bg-purple-500 text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:bg-purple-600 hover:shadow-xl transform transition duration-300 shadow-md">
-                         <i class="fas fa-handshake block md:hidden mb-1"></i>
-                         <span class="hidden md:inline"><i class="fas fa-handshake mr-1"></i></span> রেফারেল
+                    <a href="report.html" class="block bg-red-500 text-center py-3 px-2 text-xs md:text-sm font-bold rounded-xl text-white hover:bg-red-600 hover:shadow-xl transform transition duration-300 shadow-md">
+                         <i class="fas fa-bug block md:hidden mb-1"></i>
+                         <span class="hidden md:inline"><i class="fas fa-bug mr-1"></i></span> রিপোর্ট/নির্দেশিকা
                     </a>
                 </div>
             </div>
@@ -303,7 +356,7 @@
             <div class="app-card p-6 mb-8" id="submitted-proofs-section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
                     📝 আমার জমা দেওয়া প্রুফগুলোর স্ট্যাটাস
-                </h2>
+                </small-avatar
                 <div id="submitted-proofs-list" class="space-y-4">
                     <!-- Proofs will be loaded here -->
                 </div>
@@ -369,7 +422,17 @@
         const mainContentContainer = document.getElementById('main-content-container');
         const availableTasksGrid = document.getElementById('available-tasks-grid');
         const availableTasksSection = document.getElementById('available-tasks-section');
-        
+        // নতুন সংযোজন: নোটিশ বোর্ড এলিমেন্ট
+        const trustNoticeBoard = document.getElementById('trust-notice-board');
+        const appHeader = document.getElementById('app-header');
+
+        // 🔥 নতুন: নোটিশ বোর্ডের কন্টেন্ট ইলিমেন্টস
+        const noticeMessage = document.getElementById('notice-message');
+        const suspensionDetails = document.getElementById('suspension-details');
+        const suspendCountdownDisplay = document.getElementById('suspend-countdown-display'); 
+        const suspendReasonDisplay = document.getElementById('suspend-reason-display');
+
+
         const submitProofModal = document.getElementById('submit-proof-modal');
         const submitProofForm = document.getElementById('submitProofForm');
         
@@ -378,15 +441,16 @@
         let currentUserPoints = 0;
         let currentUserName = '';
         let userCompletedTasks = {};
+        let currentUserData = {}; 
         
-        // শেষবার জমা দেওয়া ফেসবুকের নাম সংরক্ষণ করার জন্য নতুন ভ্যারিয়েবল (লিংক বাদ দেওয়া হলো)
         let lastFacebookName = '';
         
         let authAndDataLoaded = false;
         
-        // 🔥 ইউজারদের প্রোফাইল ক্যাশ করার জন্য গ্লোবাল ভ্যারিয়েবল (নাম পরিবর্তন করা হলো)
         let userProfileCache = {}; 
         
+        let countdownInterval = null; 
+
         // ----------------------------------------------------------------------
         // 🔥 Cloudinary কনফিগারেশন: প্রুফ আপলোডের জন্য
         // ----------------------------------------------------------------------
@@ -394,6 +458,72 @@
         const CLOUDINARY_UPLOAD_PRESET = 'Profilepicture'; // profile.html থেকে নেওয়া
         const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
         // ----------------------------------------------------------------------
+
+        /**
+         * সময়কালকে (মিলিসেকেন্ড) ঘন্টা, মিনিট, সেকেন্ডে ফরম্যাট করে বাংলা স্ট্রিং তৈরি করে।
+         * @param {number} ms - বাকি সময় (মিলিসেকেন্ড)
+         * @returns {string} - ফরম্যাট করা বাংলা স্ট্রিং (যেমন: ১ ঘন্টা ৩৫ মিনিট ০৪ সেকেন্ড)
+         */
+        const formatDurationInBangla = (ms) => {
+            const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+            
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            const parts = [];
+            
+            // 🔥 বাংলা সংখ্যা ব্যবহার করা
+            const toBanglaNum = (num) => num.toLocaleString('bn-BD');
+
+            if (hours > 0) {
+                parts.push(`${toBanglaNum(hours)} ঘন্টা`);
+            }
+            if (minutes > 0) {
+                parts.push(`${toBanglaNum(minutes)} মিনিট`);
+            }
+            // সেকেন্ড সবসময় দেখানো হবে যদি totalSeconds > 0
+            if (totalSeconds > 0 && seconds >= 0) {
+                 parts.push(`${toBanglaNum(seconds)} সেকেন্ড`);
+            } else if (totalSeconds === 0) {
+                return '০ সেকেন্ড';
+            }
+
+            return parts.join(' ');
+        }
+        
+        /**
+         * সাসপেনশনের বাকি সময়ের কাউন্টডাউন শুরু করে।
+         * @param {number} suspendUntil - সাসপেনশনের শেষ সময় (মিলিসেকেন্ড)
+         */
+        const startSuspensionCountdown = (suspendUntil) => {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            
+            const updateCountdown = () => {
+                const now = Date.now();
+                const remainingTime = suspendUntil - now;
+                
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    suspendCountdownDisplay.textContent = 'সময় শেষ! পেজ রিলোড করুন।';
+                    // ৫ সেকেন্ড পর রিলোড করা
+                    setTimeout(() => window.location.reload(), 5000); 
+                    return;
+                }
+                
+                suspendCountdownDisplay.textContent = formatDurationInBangla(remainingTime);
+            };
+            
+            // প্রথমবার কল করা
+            updateCountdown(); 
+            // প্রতি সেকেন্ডে আপডেট করা
+            countdownInterval = setInterval(updateCountdown, 1000); 
+        };
+
 
         /**
          * বড় সংখ্যাকে সংক্ষিপ্ত ফর্মে (K, M, B) রূপান্তর করে।
@@ -553,16 +683,33 @@
             }
         };
 
-        // 🔥 নতুন: সফল ও বাতিল কাজের উপর ভিত্তি করে ৫-স্টার রেটিং গণনা করে
-        const calculateRating = (completed, rejected) => {
-            const total = completed + rejected;
-            if (total === 0) {
-                return 3.0; // ডিফল্ট রেটিং
-            }
-            const successRate = completed / total;
-            const rating = parseFloat((5 * successRate).toFixed(1));
-            return rating;
-        };
+        /**
+         * trustScore-কে নতুন স্কেল অনুযায়ী ৫-স্টার স্কেলে রূপান্তর করে।
+         * 20 = 1 Star, 40 = 2 Stars, 60 = 3 Stars, 80 = 4 Stars, 100 = 5 Stars
+         * @param {number} rawScore - ডাটাবেজের raw trustScore.
+         * @returns {number} - ৫-স্টার রেটিং (০.০ থেকে ৫.০)।
+         */
+        function mapScoreToFiveStarRating(rawScore) {
+            const score = rawScore || 0;
+            const step = 20; // প্রতি স্টারের জন্য ২০ পয়েন্ট
+            const maxScore = 100;
+            const minRating = 1.0;
+            const maxRating = 5.0;
+
+            if (score <= 20) return minRating;
+            if (score >= maxScore) return maxRating;
+
+            // 20 থেকে 100 এর মধ্যে স্কোরকে 1.0 থেকে 5.0 এ ম্যাপ করা
+            // 20 (1 star) থেকে 100 (5 stars) এর রেঞ্জ
+            const normalizedScore = (score - 20) / (maxScore - 20); // 0 থেকে 1.0
+            let rating = normalizedScore * (maxRating - minRating) + minRating;
+
+            // 0.5 স্টেপে রাউন্ড করা
+            rating = Math.round(rating * 2) / 2;
+            
+            return parseFloat(rating.toFixed(1));
+        }
+
 
         // 🔥 নতুন: ছোট স্টার রেটিং রেন্ডার করে
         const renderSmallStarRating = (score) => {
@@ -577,7 +724,6 @@
                     html += `<i class="far fa-star small-star filled-star empty-star"></i>`;
                 }
             }
-            // স্কোর টেক্সট আলাদা করে যোগ করা হবে, তাই এখানে শুধু স্টার রিটার্ন করা হলো
             return html;
         };
         
@@ -586,10 +732,12 @@
             const profile = userProfileCache[ownerId] || {};
             const name = profile.facebookName || 'অজানা ইউজার';
             const photoUrl = profile.profilePhotoUrl;
-            const completed = profile.tasksCompleted || 0;
-            const rejected = profile.tasksRejected || 0;
             
-            const ratingScore = calculateRating(completed, rejected);
+            // 🔥 পরিবর্তন: trustScore ব্যবহার করা
+            const rawtrustScore = profile.trustScore || 0; 
+            
+            // 🔥 পরিবর্তন: নতুন লজিক ব্যবহার করে রেটিং গণনা
+            const ratingScore = mapScoreToFiveStarRating(rawtrustScore); 
             const ratingHtml = renderSmallStarRating(ratingScore);
             
             const initial = name.charAt(0).toUpperCase();
@@ -620,7 +768,7 @@
             `;
         };
         
-        // 🔥 ইউজারদের প্রোফাইল ক্যাশ করার ফাংশন (আগেরটির আপডেট)
+        // 🔥 ইউজারদের প্রোফাইল ক্যাশ করার ফাংশন (trustScore লোড করার জন্য আপডেট করা হলো)
         const cacheUserProfiles = async (userIds) => {
             const usersToFetch = Array.from(userIds).filter(id => id && !userProfileCache[id]);
 
@@ -633,16 +781,14 @@
                         userProfileCache[id] = {
                             facebookName: userData.facebookName || 'অজানা ব্যবহারকারী',
                             profilePhotoUrl: userData.profilePhotoUrl || null,
-                            tasksCompleted: userData.tasksCompleted || 0,
-                            tasksRejected: userData.tasksRejected || 0,
+                            trustScore: userData.trustScore || userData.trustScore || 0, 
                             role: userData.role || 'user'
                         };
                     } else {
                         userProfileCache[id] = {
                             facebookName: `ইউজার ${id.substring(0, 4)}...`,
                             profilePhotoUrl: null,
-                            tasksCompleted: 0,
-                            tasksRejected: 0,
+                            trustScore: 0,
                             role: 'user'
                         };
                     }
@@ -651,8 +797,7 @@
                     userProfileCache[id] = {
                          facebookName: `ইউজার ${id.substring(0, 4)}... (ত্রুটি)`,
                          profilePhotoUrl: null,
-                         tasksCompleted: 0,
-                         tasksRejected: 0,
+                         trustScore: 0,
                          role: 'user'
                     };
                 }
@@ -691,15 +836,111 @@
                 throw error; 
             }
         }
+        
+        /**
+         * নোটিশ বোর্ডের উচ্চতা অনুযায়ী প্রধান কন্টেন্ট এর মার্জিন সেট করে।
+         * এটি নিশ্চিত করে যে কন্টেন্ট নোটিশ বোর্ডের নিচে শুরু হবে।
+         */
+        const updateMainContentMargin = () => {
+            const headerHeight = appHeader.offsetHeight || 64; // h-16 = 4rem = 64px
+            const defaultSpacing = 8; // mt-2 (0.5rem)
+            
+            let requiredMargin = headerHeight + defaultSpacing; 
+            
+            if (!trustNoticeBoard.classList.contains('hidden')) {
+                const noticeHeight = trustNoticeBoard.offsetHeight; 
+                requiredMargin = headerHeight + noticeHeight + 16; // 16px = 1rem (আরো একটু নিচে নামানো)
+            }
+            
+            // Tailwind utilities ব্যবহার না করে সরাসরি style.marginTop সেট করা
+            mainContentContainer.style.marginTop = `${requiredMargin / 16}rem`; // px কে rem এ কনভার্ট করা
+
+            // একবার মার্জিন সেট করার পর লোডারকে লুকিয়ে কন্টেন্ট দেখানো
+            showContentAndHideLoader();
+        };
+
+        // 🔥 সাসপেনশন মডালের লজিক এখন নোটিশ বোর্ডের মধ্যে
+        const checkSuspensionStatus = (uid) => {
+            const suspensionRef = ref(rtdb, `users/${uid}/suspension`);
+            
+            const contentElements = [mainContentContainer, appHeader];
+            
+            onValue(suspensionRef, (snapshot) => {
+                const suspensionData = snapshot.val();
+                const now = Date.now();
+
+                // ------------------------------------------
+                // ১. সাসপেনশন চেক লজিক
+                // ------------------------------------------
+                if (suspensionData && suspensionData.suspendUntil > now) {
+                    // ইউজার সাসপেন্ড আছে
+                    
+                    // a) UI ব্লকিং: পুরো পেজ ব্লার ও ব্লক করা
+                    contentElements.forEach(el => el.classList.add('content-suspended'));
+                    
+                    // b) নোটিশ বোর্ডকে সাসপেনশন মোডে সেট করা
+                    trustNoticeBoard.classList.remove('hidden');
+                    trustNoticeBoard.classList.add('suspended-mode');
+
+                    // c) সাসপেনশন মেসেজ সেট করা
+                    noticeMessage.innerHTML = `<i class="fas fa-ban mr-2"></i> **আপনার একাউন্ট সাময়িকভাবে সাসপেন্ড করা হয়েছে!**`;
+                    suspensionDetails.classList.remove('hidden');
+
+                    suspendReasonDisplay.textContent = suspensionData.reason || 'নির্দিষ্ট কারণ দেখানো হয়নি।';
+                    
+                    // d) কাউন্টডাউন শুরু করা
+                    startSuspensionCountdown(suspensionData.suspendUntil);
+                    
+                } else {
+                    // সাসপেন্ড নেই অথবা মেয়াদ শেষ
+                    
+                    // a) UI আনব্লক করা
+                    contentElements.forEach(el => el.classList.remove('content-suspended'));
+                    
+                    // b) কাউন্টডাউন বন্ধ করা
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+
+                    if (suspensionData && suspensionData.suspendUntil < now) {
+                        // মেয়াদ শেষ হলে ডেটাবেস থেকে মুছে ফেলা
+                        set(suspensionRef, null).catch(e => console.error("Error clearing suspension:", e));
+                    }
+                    
+                    // c) নোটিশ বোর্ডকে সাধারণ ট্রাস্ট স্কোর মোডে সেট করা
+                    trustNoticeBoard.classList.remove('suspended-mode');
+                    suspensionDetails.classList.add('hidden');
+                    
+                    // d) ট্রাস্ট স্কোর ওয়ার্নিং চেক (ইউজার ডেটা লোড হওয়ার পর)
+                    if (currentUserData.trustScore < 100) {
+                        trustNoticeBoard.classList.remove('hidden');
+                        noticeMessage.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> আপনার trust Score কম। সঠিকভাবে কাজ করুন নাহলে আপনার একাউন্ট সাসপেন্ড করা হবে।`;
+                    } else {
+                        trustNoticeBoard.classList.add('hidden');
+                    }
+                }
+                
+                // 🔥 সাসপেনশন লজিক শেষ হওয়ার পর মার্জিন আপডেট করা
+                updateMainContentMargin();
+
+            });
+        };
+
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userId = user.uid;
                 
+                // 🔥🔥 স্টেপ ৩: সাসপেনশন স্টেট চেক করার কোড যুক্ত
+                checkSuspensionStatus(user.uid); 
+                // ******************************************************
+                
                 const userRef = ref(rtdb, `users/${userId}`);
                 onValue(userRef, async (snapshot) => {
                     const userData = snapshot.val() || {};
-
+                    currentUserData = userData; // 🔥 গ্লোবাল ভ্যারিয়েবলে সংরক্ষণ
+                    
                     if (snapshot.val() === null) {
                         const initialUserData = {
                             points: 0,
@@ -708,13 +949,11 @@
                             tasksCompleted: 0,
                             tasksRejected: 0,
                             createdAt: Date.now(),
-                            // ইনিশিয়ালাইজেশনের সময় নতুন ফিল্ড যোগ করা হলো
                             lastFacebookName: '',
-                            role: 'user' // নতুন: ডিফল্ট রোল সেট করা হলো
+                            role: 'user', 
+                            trustScore: 0 
                         };
                         try {
-                            // ডেটাবেসে ইনিশিয়ালাইজেশনের সময় lastFacebookLink কে রাখা হলো
-                            // তবে এই অ্যাপ্লিকেশনে এটি আর ব্যবহার করা হবে না।
                             await set(userRef, initialUserData);
                             return; 
                         } catch (e) {
@@ -726,12 +965,19 @@
                     currentUserPoints = userData.points || 0; 
                     currentUserName = userData.facebookName || 'ব্যবহারকারী';
                     userCompletedTasks = userData.completedTasks || {};
-                    
-                    // শেষবার জমা দেওয়া ফেসবুকের নাম লোড করা হচ্ছে (লিংক বাদ দেওয়া হলো)
                     lastFacebookName = userData.lastFacebookName || '';
                     
-                    const userRole = userData.role || 'user'; // নতুন: ইউজারের রোল লোড করা হলো
-                    updateDashboardLinks(userRole); // নতুন: রোলের ভিত্তিতে লিংক আপডেট করা হলো
+                    const userRole = userData.role || 'user'; 
+                    const usertrustScore = userData.trustScore || 0; 
+
+                    // ** ট্রাস্ট স্কোর নোটিশ বোর্ড দেখানো/লুকানোর লজিক **
+                    // 🔥 এই ব্লকটি এখন `checkSuspensionStatus` ফাংশনের `else` ব্লকে চলে গেছে। 
+                    // এখানে শুধু `checkSuspensionStatus` আবার কল করা হলো যাতে ডেটা লোড হওয়ার পরে ট্রাস্ট স্কোর ওয়ার্নিং আপডেট হয়।
+                    checkSuspensionStatus(user.uid);
+                    // ******************************************************
+
+
+                    updateDashboardLinks(userRole); 
                     
                     // এখানে formatPoints ফাংশন ব্যবহার করা হয়েছে
                     document.getElementById('user-points').textContent = formatPoints(currentUserPoints);
@@ -754,8 +1000,8 @@
                         profileAvatar.textContent = userData.facebookName.charAt(0).toUpperCase();
                     }
                     
+                    // শুধুমাত্র একবার টাস্ক লিসেনার সেট করা
                     listenForTasks(); 
-                    showContentAndHideLoader();
                 });
                 
             } else {
@@ -770,7 +1016,7 @@
                 } catch (error) {
                     console.error("Authentication failed:", error);
                     showNotification('লগইন করতে সমস্যা হচ্ছে। পেজটি রিলোড করুন।', 'error');
-                    showContentAndHideLoader();
+                    updateMainContentMargin(); // ব্যর্থ হলেও কন্টেন্ট দেখানোর জন্য মার্জিন সেট করা
                 }
             }
         });
@@ -789,102 +1035,89 @@
             }
 
             proofs.forEach(proof => {
-                // 🔥 রিভিউকারীর নাম ক্যাশ থেকে নেওয়া হলো
+                // 🔥 সংক্ষিপ্ত ডিসপ্লে: রিভিউয়ারের নাম তৈরি করা হলো
                 const reviewerProfile = userProfileCache[proof.reviewedBy];
-                const reviewerDisplayName = reviewerProfile 
-                    ? (reviewerProfile.facebookName || 'অজানা ব্যবহারকারী') + (reviewerProfile.role === 'admin' ? ' (এডমিন)' : reviewerProfile.role === 'moderator' ? ' (মডারেটর)' : '')
-                    : (proof.reviewedBy ? `ID: ${proof.reviewedBy.substring(0, 8)}...` : 'অপেক্ষা করছে');
                 
+                let reviewerDisplay;
+                if (proof.reviewedBy) {
+                    const name = reviewerProfile ? reviewerProfile.facebookName || 'অজানা' : 'অজানা';
+                    const role = reviewerProfile ? reviewerProfile.role : 'owner'; // যদি প্রোফাইল ডেটা না পাওয়া যায়, ধরে নেওয়া হলো টাস্ক মালিক
+                    const roleTag = role === 'admin' ? ' (এডমিন)' : (role === 'moderator' ? ' (মডারেটর)' : ' (মালিক)');
+                    reviewerDisplay = `<p class="text-xs text-gray-600 mt-1"><i class="fas fa-user-shield mr-1 text-indigo-500"></i> রিভিউ করেছেন: <span class="font-semibold">${name}</span>${roleTag}</p>`;
+                } else {
+                    reviewerDisplay = `<p class="text-xs text-gray-600 mt-1"><i class="fas fa-user-shield mr-1 text-indigo-500"></i> রিভিউ: <span class="font-semibold">অপেক্ষা করছে</span></p>`;
+                }
+                
+                // 🔥 সংক্ষিপ্ত স্ট্যাটাস ডিসপ্লে তৈরি করা
+                let statusInfo = '';
+                let borderColor = 'border-yellow-500';
+
+                if (proof.status === 'approved') {
+                    borderColor = 'border-green-500';
+                    statusInfo = `<span class="font-bold text-green-700">+${formatPoints(proof.pointsPerTask)} পয়েন্ট</span>`;
+                } else if (proof.status === 'rejected') {
+                    borderColor = 'border-red-500';
+                    statusInfo = `<span class="font-bold text-red-700">বাতিল</span>`;
+                } else {
+                    statusInfo = `<span class="font-bold text-yellow-700">রিভিউ চলছে</span>`;
+                }
+                
+                // বাতিলের কারণ যদি থাকে
+                const rejectionReasonHtml = proof.status === 'rejected' && proof.rejectionReason 
+                    ? `<div class="bg-red-50 p-3 rounded-lg mt-3 text-red-700 border-l-4 border-red-400 text-xs">
+                         <i class="fas fa-exclamation-triangle mr-1"></i> 
+                         <span class="font-bold">কারণ:</span> ${proof.rejectionReason}
+                       </div>`
+                    : '';
+
+                // 🔥 কার্ডের ডিজাইন সংক্ষিপ্ত করা হয়েছে
                 const card = `
-                    <div class="app-card p-5 border-l-4 ${proof.status === 'approved' ? 'border-green-500' : (proof.status === 'rejected' ? 'border-red-500' : 'border-yellow-500')}">
+                    <div class="app-card p-4 border-l-4 ${borderColor}">
                         
-                        <!-- টাস্ক টাইপ, পয়েন্ট ও স্ট্যাটাস -->
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 pb-3 border-b border-gray-100">
-                            <div class="flex items-center space-x-2 mb-2 sm:mb-0">
-                                ${getTaskTypeBadge(proof.taskType)}
-                                <span class="text-lg font-bold text-gray-800">
-                                    +${formatPoints(proof.pointsPerTask)} পয়েন্ট
-                                </span>
-                            </div>
-                            <!-- স্ট্যাটাস ব্যাজ -->
-                            ${getStatusBadge(proof.status)}
-                        </div>
-                        
-                        <div class="space-y-2 text-sm text-gray-600">
-                            <!-- টাস্ক লিংক -->
-                            <p class="flex items-start">
-                                <i class="fas fa-link text-blue-500 mr-2 mt-1"></i>
-                                <span>
-                                    <span class="font-medium text-gray-500 block">টাস্ক লিংক:</span>
-                                    <a href="${proof.taskLink}" target="_blank" class="brand-blue-text hover:underline break-all">${proof.taskLink}</a>
-                                </span>
-                            </p>
-                            <!-- জমা দেওয়া আইডি -->
-                            <p class="flex items-center">
-                                <i class="fas fa-user-circle text-gray-500 mr-2"></i>
-                                <span>
-                                    <span class="font-medium text-gray-500">আপনার ফেসবুক আইডি:</span> 
-                                    <span class="font-semibold text-gray-700">${proof.facebookName}</span>
-                                </span>
-                            </p>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             
-                            <!-- 🔥 পরিবর্তন: প্রুফ ডেটা প্রদর্শন (Cloudinary URL) -->
-                            ${proof.screenshotUrl ? `
-                                <div class="pt-2 border-t border-gray-100">
-                                    <p class="flex items-start mb-2">
-                                        <i class="fas fa-image text-green-500 mr-2 mt-1"></i>
-                                        <span>
-                                            <span class="font-medium text-gray-500 block">স্ক্রিনশট প্রুফ:</span>
-                                            <a href="${proof.screenshotUrl}" target="_blank" class="brand-blue-text hover:underline break-all font-mono text-xs">${proof.screenshotUrl.substring(0, 60)}...</a>
-                                        </span>
-                                    </p>
-                                    <!-- ইমেজ প্রিভিউ: ক্লিক করলে ছবিটি বড় করে দেখাবে -->
-                                    <img src="${proof.screenshotUrl}" alt="স্ক্রিনশট প্রুফ" 
-                                         class="w-full h-auto max-h-40 object-contain rounded-lg border border-gray-200 cursor-pointer"
-                                         onclick="window.open('${proof.screenshotUrl}', '_blank')" />
+                            <!-- বাম পাশ: টাস্ক টাইপ, নাম ও জমা দেওয়ার সময় -->
+                            <div class="space-y-1 mb-3 sm:mb-0">
+                                <div class="flex items-center space-x-2">
+                                    ${getTaskTypeBadge(proof.taskType)}
+                                    <span class="text-lg font-bold text-gray-800">${proof.taskType}</span>
                                 </div>
-                            ` : ''}
+                                <p class="text-xs text-gray-500">
+                                    <i class="fas fa-user-circle mr-1"></i> 
+                                    জমা দেওয়া নাম: <span class="font-semibold text-gray-700">${proof.facebookName}</span>
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i> 
+                                    সময়: ${formatDate(proof.submittedAt)}
+                                </p>
+                                ${reviewerDisplay} 
+                            </div>
 
-                            <!-- জমা দেওয়ার সময় -->
-                            <p class="flex items-center">
-                                <i class="fas fa-clock text-gray-500 mr-2"></i>
-                                <span>
-                                    <span class="font-medium text-gray-500">জমা দেওয়ার সময়:</span> 
-                                    <span class="font-semibold text-gray-700">${formatDate(proof.submittedAt)}</span>
-                                </span>
-                            </p>
-                            
-                            ${proof.status !== 'pending' && proof.reviewedBy // শুধুমাত্র রিভিউ হয়ে গেলে এই তথ্য দেখাবে
-                                ? `<p class="flex items-center pt-2 border-t border-gray-100">
-                                         <i class="fas fa-user-shield text-indigo-500 mr-2"></i>
-                                         <span>
-                                             <span class="font-medium text-gray-500">রিভিউ করেছেন:</span> 
-                                             <span class="font-semibold text-gray-700">${reviewerDisplayName}</span>
-                                         </span>
-                                     </p>`
-                                : ''
-                            }
-
-                            ${proof.status === 'rejected' && proof.rejectionReason 
-                                ? `<div class="bg-red-50 p-3 rounded-lg mt-3 text-red-700 border-l-4 border-red-400">
-                                     <i class="fas fa-exclamation-triangle mr-1"></i> 
-                                     <span class="font-bold">বাতিলের কারণ:</span> ${proof.rejectionReason}
-                                   </div>`
-                                : ''
-                            }
+                            <!-- ডান পাশ: স্ট্যাটাস ও পয়েন্ট -->
+                            <div class="text-right flex flex-col items-end space-y-1">
+                                ${statusInfo}
+                                <!-- 🔥 পরিবর্তন: প্রুফ দেখুন বাটন সরানো হয়েছে, শুধুমাত্র রিভিউয়ারের নাম দেখানো হবে -->
+                                <!-- <a href="${proof.screenshotUrl || proof.taskLink}" target="_blank" class="brand-blue-text hover:underline text-xs flex items-center">
+                                    <i class="fas fa-image mr-1"></i> প্রুফ দেখুন
+                                </a> -->
+                            </div>
                         </div>
+                        
+                        ${rejectionReasonHtml}
                     </div>
                 `;
                 submittedProofsList.insertAdjacentHTML('beforeend', card);
             });
         };
 
+
         const listenForTasks = () => {
             if (!userId) return;
 
             const tasksRef = ref(rtdb, `tasks`);
             
-            onValue(tasksRef, async (snapshot) => { // async ফাংশন করা হলো
+            // 🔥 প্রুফের স্ট্যাটাস পরিবর্তন হলেও এই লিসেনার আবার ফায়ার হবে, তাই ট্রাস্ট স্কোর চেক করা হবে
+            onValue(tasksRef, async (snapshot) => { 
                 const allTasks = snapshot.val() || {};
                 const availableTasks = [];
                 const submittedProofs = [];
@@ -901,14 +1134,14 @@
                         
                         if (task.ownerId !== userId) {
                             
-                            let pendingProofCount = 0; // 🔥 নতুন: পেন্ডিং প্রুফ কাউন্টার
+                            let pendingProofCount = 0; 
                             
                             if (task.proofs) {
                                 for (const proofId in task.proofs) {
                                     const proof = task.proofs[proofId];
                                     
                                     if (proof.status === 'pending') {
-                                        pendingProofCount++; // 🔥 পেন্ডিং প্রুফ গণনা
+                                        pendingProofCount++; 
                                     }
                                     
                                     if (proof.userId === userId) {

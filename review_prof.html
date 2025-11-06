@@ -124,7 +124,7 @@
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             width: 90%;
             max-width: 450px; /* একটু বড় করা হলো */
             text-align: center;
@@ -224,8 +224,23 @@
     <div id="notification-container"></div>
     
     <script type="module">
+        // Firebase imports for Realtime Database
         import { auth, rtdb, showNotification, set, ref, onValue, runTransaction, get, update } from "./rtdb-config.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        
+        // 🔥🔥🔥 মডারেটর/এডমিন লজিকের সাথে সামঞ্জস্যপূর্ণ ধ্রুবক (Constants) 🔥🔥🔥
+        const APPROVE_Trust_CHANGE = 5;  // অনুমোদনের জন্য +5
+        const REJECT_Trust_CHANGE = -10; // বাতিলের জন্য -10
+        const GENERIC_WARNING = "আপনি সঠিকভাবে কাজ করুন না হলে আপনার একাউন্ট বন্ধ করে দেওয়া হতে পারে।";
+        
+        // Trust Score অনুযায়ী সাসপেনশনের নিয়মাবলী (সর্বোচ্চ থেকে সর্বনিম্ন)
+        const SUSPENSION_RULES = [
+            { score: 40, durationMs: 24 * 60 * 60 * 1000, durationText: "২৪ ঘন্টা" },
+            { score: 50, durationMs: 3 * 60 * 60 * 1000, durationText: "৩ ঘন্টা" },
+            { score: 60, durationMs: 60 * 60 * 1000, durationText: "১ ঘন্টা" },
+            { score: 70, durationMs: 30 * 60 * 1000, durationText: "৩০ মিনিট" }
+        ];
+        // 🔥🔥🔥 ধ্রুবক শেষ 🔥🔥🔥
         
         const proofsListDiv = document.getElementById('proofs-list');
         const proofsHistoryListDiv = document.getElementById('proofs-history-list'); // 🔥 নতুন: হিস্ট্রি লিস্ট
@@ -261,6 +276,7 @@
         };
 
         // Custom Modal functions
+        // 🔥 আপডেট: মডাল খোলার ফাংশনটি সরল করা হলো
         window.openCustomModal = (action, proof) => {
              currentProofDetails = proof;
             
@@ -273,75 +289,64 @@
             modalUserName.textContent = proof.facebookName || proof.userId;
             modalPoints.textContent = (proof.pointsPerTask || 0).toLocaleString('bn-BD');
             
-            // অনুমোদন মোড
             if (action === 'approve') {
                 actionTitle.textContent = 'অনুমোদন নিশ্চিত করুন';
                 actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} কে ${(proof.pointsPerTask || 0).toLocaleString('bn-BD')} পয়েন্ট দিতে চান?`;
+                
+                // অনুমোদন বাটনকে চূড়ান্ত অ্যাকশন হিসাবে সেট করা
                 confirmActionButton.textContent = 'অনুমোদন';
                 confirmActionButton.classList.remove('bg-red-500', 'hover:bg-red-600');
                 confirmActionButton.classList.add('bg-green-500', 'hover:bg-green-600');
-                rejectActionButton.textContent = 'বাতিল';
-                
-                // অনুমোদন বাটনকে চূড়ান্ত অ্যাকশন হিসাবে সেট করা
                 confirmActionButton.onclick = () => {
                     closeCustomModal();
                     handleProof('approve', proof);
                 };
                 
                 // বাতিল বাটনকে রিজেকশন মোড ট্রিগার করতে সেট করা
+                rejectActionButton.textContent = 'বাতিল';
+                rejectActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                rejectActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
                 rejectActionButton.onclick = () => {
-                    // দ্রুত মোড পরিবর্তন: বাতিল করার জন্য একটি টেক্সট এরিয়া ও কনফার্ম বাটন
-                    actionTitle.textContent = 'বাতিল কারণ দিন';
-                    actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} এর প্রুফ বাতিল করবেন? বাতিলের কারণ উল্লেখ করুন।`;
-                    
-                    confirmActionButton.textContent = 'বাতিল করুন';
-                    confirmActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    confirmActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
-                    rejectActionButton.style.display = 'none'; // আগের বাতিল বাটন হাইড
-                    rejectionReasonGroup.classList.remove('hidden'); // কারণ ইনপুট দেখানো
-                    
-                    // নতুন কনফার্ম বাটন ক্লিক ইভেন্ট সেট করা
-                    confirmActionButton.onclick = () => {
-                        const reason = rejectionReasonInput.value.trim();
-                        if (!reason) {
-                            showNotification('বাতিল করার কারণ উল্লেখ করা আবশ্যক।', 'error');
-                            return;
-                        }
-                        closeCustomModal();
-                        handleProof('reject', proof, reason);
-                    };
+                    // দ্রুত মোড পরিবর্তন: বাতিল করার জন্য টেক্সট এরিয়া দেখানো
+                    enterRejectionReasonMode(proof);
                 };
-                
-            } else { // যখন ইউজার সরাসরি বাতিল বাটনে ক্লিক করবে 
-                 actionTitle.textContent = 'বাতিল কারণ দিন';
-                 actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} এর প্রুফ বাতিল করবেন? বাতিলের কারণ উল্লেখ করুন।`;
-                 
-                 confirmActionButton.textContent = 'বাতিল করুন';
-                 confirmActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
-                 confirmActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
-                 
-                 rejectActionButton.style.display = 'none'; // অতিরিক্ত বাটন হাইড
-                 rejectionReasonGroup.classList.remove('hidden'); // কারণ ইনপুট দেখানো
-                 
-                 confirmActionButton.onclick = () => {
-                     const reason = rejectionReasonInput.value.trim();
-                     if (!reason) {
-                         showNotification('বাতিল করার কারণ উল্লেখ করা আবশ্যক।', 'error');
-                         return;
-                     }
-                     closeCustomModal();
-                     handleProof('reject', proof, reason);
-                 };
+            } else if (action === 'reject') { 
+                // সরাসরি বাতিল বাটনে ক্লিক করলে
+                enterRejectionReasonMode(proof);
             }
-
+            
             proofActionModal.style.display = 'flex';
         };
+
+        // 🔥 নতুন: বাতিলের কারণ ইনপুট মোডে পরিবর্তন করার ফাংশন
+        const enterRejectionReasonMode = (proof) => {
+            actionTitle.textContent = 'বাতিল কারণ দিন';
+            actionMessage.textContent = `আপনি কি নিশ্চিত ${proof.facebookName || 'এই ব্যবহারকারী'} এর প্রুফ বাতিল করবেন? বাতিলের কারণ উল্লেখ করুন।`;
+            
+            confirmActionButton.textContent = 'বাতিল করুন';
+            confirmActionButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+            confirmActionButton.classList.add('bg-red-500', 'hover:bg-red-600');
+            rejectActionButton.style.display = 'none'; // আগের বাতিল বাটন হাইড
+            rejectionReasonGroup.classList.remove('hidden'); // কারণ ইনপুট দেখানো
+            
+            // নতুন কনফার্ম বাটন ক্লিক ইভেন্ট সেট করা (ফাইনাল রিজেক্ট অ্যাকশন)
+            confirmActionButton.onclick = () => {
+                const reason = rejectionReasonInput.value.trim();
+                if (!reason) {
+                    showNotification('বাতিল করার কারণ উল্লেখ করা আবশ্যক।', 'error');
+                    return;
+                }
+                closeCustomModal();
+                handleProof('reject', proof, reason);
+            };
+        }
+
 
         window.closeCustomModal = () => {
             proofActionModal.style.display = 'none';
             // 🔥 নতুন: ইনপুট ক্লিয়ার করা
             rejectionReasonInput.value = ''; 
-            // বাটনগুলো ডিফল্ট অবস্থায় ফিরিয়ে আনা
+            // বাটনগুলো ডিফল্ট অবস্থায় ফিরিয়ে আনা (পরবর্তী কলের জন্য)
             confirmActionButton.style.display = 'block';
             rejectActionButton.style.display = 'block'; 
         };
@@ -516,7 +521,14 @@
             }
         };
 
-        // 🔥 আপডেট: বাতিলের কারণসহ handleProof ফাংশন
+        
+        // =========================================================================
+        // 🔥🔥 আপডেটেড সাসপেনশন লজিক (users/{uid}/suspension পাথে সেভ হবে) 🔥🔥
+        // applySuspension ফাংশনটি মুছে handleProof এর মধ্যে লজিক সরাসরি ব্যবহার করা হলো।
+        // =========================================================================
+
+
+        // 🔥 আপডেট: বাতিলের কারণসহ handleProof ফাংশন এবং TrustScore যুক্ত করা হয়েছে
         window.handleProof = async (action, proof, rejectionReason = null) => {
             const proofRef = ref(rtdb, `tasks/${proof.taskId}/proofs/${proof.id}`);
             const userRef = ref(rtdb, `users/${proof.userId}`);
@@ -526,7 +538,14 @@
             showNotification("প্রক্রিয়াকরণ চলছে...", 'info');
 
             try {
-                // ১. প্রুফের স্ট্যাটাস আপডেট করা। reviewedBy: userId নিশ্চিত করা হলো, যা task owner-এর আইডি।
+                const snapshot = await get(proofRef);
+                const currentProof = snapshot.val();
+                if (!currentProof || currentProof.status !== 'pending') {
+                    showNotification('এই প্রুফটি ইতিমধ্যেই প্রক্রিয়া করা হয়েছে।', 'error');
+                    return;
+                }
+
+                // ১. প্রুফের স্ট্যাটাস আপডেট করা। reviewedBy: userId (Task Owner) নিশ্চিত করা হলো।
                 const updateData = { 
                     status: action === 'approve' ? 'approved' : 'rejected', 
                     reviewedBy: userId, 
@@ -534,25 +553,88 @@
                 };
                 
                 if (action === 'reject' && rejectionReason) {
-                     updateData.rejectionReason = rejectionReason; // 🔥 নতুন: বাতিলের কারণ যুক্ত করা হলো
+                     updateData.rejectionReason = rejectionReason; // 🔥 বাতিলের কারণ যুক্ত করা হলো
                 }
                 
                 await update(proofRef, updateData);
 
-                // ২. ইউজারের পয়েন্ট এবং স্ট্যাটাস আপডেট করা (ট্রানজেকশন ব্যবহার করে)
+                // ২. ইউজারের পয়েন্ট, স্ট্যাটাস এবং TrustScore আপডেট করা (ট্রানজেকশন ব্যবহার করে)
+                let finalTrustScore = 0;
+                let suspensionDurationText = GENERIC_WARNING;
+                let suspensionDataToSet = null; // সাসপেনশন ডেটা ট্রানজেকশনের শেষে সেট করার জন্য
+
                 const userUpdatePromise = runTransaction(userRef, (currentData) => {
                     if (currentData) {
                         currentData.completedTasks = currentData.completedTasks || {};
+                        
+                        const currentTrustScore = currentData.trustScore || 0;
+                        let newTrustScore = currentTrustScore; 
+                        
+                        // সাসপেনশন ডেটার জন্য ডিফল্ট ভ্যালু তৈরি করা
+                        const currentSuspensionUntil = currentData.suspension?.suspendUntil || 0;
+                        
                         if (action === 'approve') {
                             currentData.points = (currentData.points || 0) + points;
                             currentData.tasksCompleted = (currentData.tasksCompleted || 0) + 1;
                             currentData.completedTasks[proof.taskId] = 'approved';
+                            
+                            // 🔥 TrustScore আপডেট: অনুমোদন (+5)
+                            newTrustScore += APPROVE_Trust_CHANGE; 
+                            
+                            // অনুমোদনের ক্ষেত্রে মেয়াদোত্তীর্ণ সাসপেনশন থাকলে তা ক্লিয়ার করা
+                            if (currentData.suspension && currentData.suspension.suspendUntil && currentData.suspension.suspendUntil < Date.now()) {
+                                currentData.suspension = null; 
+                            }
                         } else {
                             // বাতিলের ক্ষেত্রে: rejected count বাড়ানো
                             currentData.tasksRejected = (currentData.tasksRejected || 0) + 1;
-                            // ইউজারকে আবার চেষ্টা করার সুযোগ দিতে completedTasks থেকে টাস্কটি সরিয়ে ফেলা
                             delete currentData.completedTasks[proof.taskId]; 
+                            
+                            // 🔥 TrustScore আপডেট: বাতিল (-10)
+                            newTrustScore += REJECT_Trust_CHANGE;
+                            
+                            // 🔥 সাসপেনশন লজিক প্রয়োগ (রিজেকশনের ক্ষেত্রে)
+                            let suspendMinutes = 0;
+                            let suspensionTextLocal = null;
+
+                            for (const rule of SUSPENSION_RULES) {
+                                if (newTrustScore <= rule.score) {
+                                    if (rule.durationMs > suspendMinutes * 60 * 1000) {
+                                        suspendMinutes = rule.durationMs / (60 * 1000); 
+                                        suspensionTextLocal = rule.durationText;
+                                    }
+                                }
+                            }
+                            
+                            if (suspendMinutes > 0) {
+                                const suspensionEndTime = Date.now() + (suspendMinutes * 60 * 1000);
+                                
+                                // যদি নতুন সাসপেনশন আগের চেয়ে লম্বা হয়, তবে আপডেট করা
+                                if (suspensionEndTime > currentSuspensionUntil) {
+                                    const reasonMessage = `ট্রাস্ট স্কোর ${newTrustScore} এ পৌঁছানোয় ${suspensionTextLocal} এর জন্য সাসপেনশন।`;
+                                    
+                                    // সাসপেনশন ডেটা তৈরি
+                                    suspensionDataToSet = {
+                                        suspended: true,
+                                        suspendUntil: suspensionEndTime,
+                                        reason: reasonMessage,
+                                        issuedBy: userId, 
+                                        issuedAt: Date.now()
+                                    };
+                                    
+                                    // ট্রানজেকশনের বাইরে নোটিফিকেশনের জন্য সাসপেনশন টেক্সট আপডেট
+                                    suspensionDurationText = suspensionTextLocal;
+                                    
+                                    // 🔥 সাসপেনশন অবজেক্ট সরাসরি ইউজার ডেটার মধ্যে আপডেট
+                                    currentData.suspension = suspensionDataToSet;
+                                }
+                            }
                         }
+
+                        // 🔥 গুরুত্বপূর্ণ ফিক্স: TrustScore কে ০ থেকে ১০০ এর মধ্যে সীমাবদ্ধ করা
+                        currentData.trustScore = Math.min(100, Math.max(0, newTrustScore)); 
+                        
+                        return currentData;
                     }
                     return currentData;
                 });
@@ -565,17 +647,31 @@
                             currentData.status = 'completed';
                         }
                     }
-                    // বাতিলের ক্ষেত্রে এখানে কিছু করার দরকার নেই
                     return currentData;
                 });
                 
                 const [userResult, taskResult] = await Promise.all([userUpdatePromise, taskUpdatePromise]);
                 
                 if (userResult.committed && taskResult.committed) {
+                    const finalUserData = userResult.snapshot.val();
+                    finalTrustScore = finalUserData.trustScore; 
+                    let notificationMessage = '';
+                    
                     if (action === 'approve') {
-                        showNotification("প্রুফ অনুমোদিত হয়েছে এবং টাস্ক মালিকের এন্ট্রি রেকর্ড করা হয়েছে!", 'success');
+                        notificationMessage = `প্রুফ অনুমোদিত হয়েছে এবং ইউজার এর ক্রেডিবিলিটি স্কোর (+${APPROVE_Trust_CHANGE}) আপডেট করা হয়েছে! নতুন স্কোর: ${finalTrustScore}`;
+                        showNotification(notificationMessage, 'success');
                     } else {
-                        showNotification("প্রুফ বাতিল করা হয়েছে এবং টাস্ক মালিকের এন্ট্রি রেকর্ড করা হয়েছে।", 'info');
+                        // রিজেকশনের ফলাফল নোটিফিকেশন
+                        notificationMessage = `প্রুফ বাতিল হওয়ায় ইউজার এর ক্রেডিবিলিটি স্কোর (${REJECT_Trust_CHANGE}) আপডেট করা হয়েছে। নতুন স্কোর: ${finalTrustScore}।`;
+                        
+                        if (finalUserData.suspension && finalUserData.suspension.suspended) {
+                            // সাসপেনশন হয়েছে
+                            notificationMessage += ` **ইউজারকে ${suspensionDurationText} এর জন্য সাসপেন্ড করা হয়েছে।**`;
+                        } else {
+                            // সাসপেনশন হয়নি, শুধু সতর্কতা
+                            notificationMessage += ` **সাধারণ সতর্কতা পাঠানো হয়েছে: "${GENERIC_WARNING}"**`;
+                        }
+                        showNotification(notificationMessage, 'error'); 
                     }
                 } else {
                     throw new Error("Transaction failed.");
