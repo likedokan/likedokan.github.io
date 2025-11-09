@@ -60,10 +60,24 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
-        /* কন্টেন্ট প্যাডিং - শুধুমাত্র প্রাথমিক স্পেসের জন্য, ডাইনামিক মার্জিন JS এ হ্যান্ডেল করা হবে */
+        /* 🔥 নতুন: ফিক্সড নোটিশ বোর্ড স্টাইল */
+        .fixed-notice-board {
+            position: fixed;
+            top: 64px; /* হেডার এর উচ্চতা (h-16 = 64px) এর ঠিক নিচে */
+            left: 0;
+            right: 0;
+            z-index: 49; /* হেডার (z-50) এর নিচে */
+            background-color: #ffc107; /* ওয়ার্নিং ইয়েলো */
+            color: #343a40; /* ডার্ক টেক্সট */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* নোটিশ বোর্ড সরাতে ট্রানজিশন যোগ করা হয়েছে */
+            transition: top 0.3s ease-out, background-color 0.3s; 
+        }
+
+        /* কন্টেন্ট প্যাডিং (পরিবর্তন: ফিক্সড padding-top সরানো হলো, এখন JS margin-top সেট করবে) */
         #main-content-container {
-            padding-top: 1rem; /* হেডার এর নিচে সামান্য স্পেস */
-            transition: margin-top 0.3s ease-out; /* মার্জিনের মসৃণ ট্রানজিশন */
+            padding-top: 1rem; /* সামান্য প্যাডিং যাতে মার্জিন না পেলেও কন্টেন্ট স্ক্রিন টপ না ছোঁয় */
+            transition: margin-top 0.3s ease-out; 
         }
 
         /* ইনপুট স্টাইলিং */
@@ -75,13 +89,8 @@
             background-color: white;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-
-        .app-input:focus {
-            outline: none;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-
+        
+        /* ... (বাকি স্টাইল অপরিবর্তিত) ... */
         /* লোডিং স্পিনার ও ওভারলে স্টাইল (পরিবর্তিত) */
         #loading-overlay {
             position: fixed;
@@ -162,39 +171,48 @@
         }
         /* --- ছোট স্টার রেটিং স্টাইল শেষ --- */
 
-        /* 🔥 নতুন: সাসপেনশন হলে ব্লার ও ব্লক */
-        .content-suspended {
-            pointer-events: none;
-            filter: blur(4px) grayscale(50%); /* একটু বেশি ব্লার */
-            user-select: none;
-        }
-        
-        /* 🔥 আপডেট: ট্রাস্ট নোটিশ বোর্ড স্টাইল */
-        #trust-notice-board {
+        /* 🔥 নতুন: মোবাইল মেনু ওভারলে স্টাইল */
+        #mobile-menu-overlay {
             position: fixed;
-            top: 64px; /* হেডার এর নিচে */
-            left: 0;
+            top: 64px; /* হেডার এর উচ্চতা (h-16) */
             right: 0;
-            z-index: 45; /* হেডার (z-50) এর নিচে */
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            transition: all 0.3s ease;
+            width: 80%; /* মোবাইল স্ক্রিনের ৮০% জুড়ে */
+            max-width: 300px;
+            height: calc(100vh - 64px); /* হেডার এর নিচে বাকি অংশ */
+            z-index: 55; /* হেডার (z-50) এর উপরে */
+            background-color: white;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%); /* ডিফল্টভাবে ডানদিকে লুকিয়ে থাকবে */
+            transition: transform 0.3s ease-in-out;
         }
-        
-        /* 🔥 সাসপেনশন মোডের জন্য নোটিশ বোর্ডের কালার */
-        #trust-notice-board.suspended-mode {
-            background-color: #fef2f2; /* লাল ব্যাকগ্রাউন্ড */
-            border-bottom: 2px solid #ef4444; /* লাল বর্ডার */
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2); /* লাল শ্যাডো */
-            cursor: not-allowed;
-            pointer-events: all; /* শুধু নোটিশ বোর্ডটি ইন্টারঅ্যাক্টিভ থাকবে */
-            z-index: 100; /* 🔥 ফিক্স: পেজ ব্লার হলেও নোটিশ বোর্ডটি উপরে থাকবে */
+
+        #mobile-menu-overlay.open {
+            transform: translateX(0); /* মেনু খোলার জন্য */
+        }
+
+        /* মেনু ব্লার ব্যাকড্রপ */
+        #menu-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 54;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        #menu-backdrop.open {
+            opacity: 1;
+            pointer-events: all;
         }
     </style>
 </head>
 <body>
     
-    <!-- 🔥 সাসপেনশন মডালটি সম্পূর্ণ মুছে ফেলা হলো -->
+    <!-- সাসপেনশন মডালটি সম্পূর্ণ মুছে ফেলা হলো -->
 
     <!-- লোডিং ওভারলে -->
     <div id="loading-overlay">
@@ -211,48 +229,89 @@
                 <span class="mr-2 text-3xl"></span> Like Dokan
             </div>
             
-            <!-- পয়েন্ট ব্যাজ ও নেভিগেশন -->
-            <div class="flex items-center gap-0">
-                <!-- text-0.1 পরিবর্তন করে text-sm করা হলো -->
+            <!-- পয়েন্ট ব্যাজ ও নেভিগেশন (পরিবর্তিত) -->
+            <div class="flex items-center gap-2">
+                <!-- পয়েন্ট ব্যাজ -->
                 <div class="bg-gradient-to-r from-blue-300 to-blue-600 text-white font-bold px-3 py-0.5 rounded-full text-sm flex items-center shadow-md">
                     <i class="fas fa-coins mr-2"></i>
                     <span id="user-points">0</span>
                 </div>
                 
-                <!-- নেভিগেশন বাটন -->
-                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="রিপোর্ট ও নির্দেশিকা" onclick="window.location.href='report.html'">
-                    <i class="fas fa-info-circle text-lg"></i>
-                </button>
-                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="প্রোফাইল" onclick="window.location.href='profile.html'">
-                    <i class="fas fa-user text-lg"></i>
-                </button>
-                <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="লগআউট" onclick="window.logout()">
-                    <i class="fas fa-sign-out-alt text-lg"></i>
+                <!-- ডেস্কটপ নেভিগেশন বাটনস (ছোট স্ক্রিনে লুকানো) -->
+                <div class="hidden sm:flex items-center gap-0">
+                    <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="রিপোর্ট ও নির্দেশিকা" onclick="window.location.href='report.html'">
+                        <i class="fas fa-info-circle text-lg"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="প্রোফাইল" onclick="window.location.href='profile.html'">
+                        <i class="fas fa-user text-lg"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="লগআউট" onclick="window.logout()">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- মোবাইল মেনু টগল বাটন (ডেস্কটপে লুকানো) -->
+                <button id="menu-toggle-button" class="sm:hidden w-10 h-10 rounded-full hover:bg-gray-100 transition duration-200 text-gray-600" title="মেনু" onclick="window.toggleMenu()">
+                    <i class="fas fa-bars text-lg" id="menu-icon"></i>
                 </button>
             </div>
         </div>
     </header>
-
-    <!-- ট্রাস্ট স্কোর / সাসপেনশন নোটিশ বোর্ড (একই ইলিমেন্ট) -->
-    <!-- 🔥 কন্টেন্ট ডিসপ্লে করার জন্য নতুন আইডি যুক্ত করা হলো -->
-    <div id="trust-notice-board" class="hidden fixed z-40 py-2 bg-red-100 border-b-2 border-red-500 shadow-lg transition-all duration-300">
-        <div class="container max-w-4xl mx-auto px-4 text-center">
-            <!-- ওয়ার্নিং/সাসপেনশন মেসেজ এখানে ডিসপ্লে হবে -->
-            <p id="notice-message" class="text-sm font-semibold text-red-800">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                আপনার trust Score কম। সঠিকভাবে কাজ করুন নাহলে আপনার একাউন্ট সাসপেন্ড করা হবে।
-            </p>
-            
-            <!-- 🔥 সাসপেনশন কাউন্টডাউন ও কারণ ডিসপ্লে -->
-            <div id="suspension-details" class="hidden mt-1 flex flex-col md:flex-row justify-center items-center text-xs md:text-sm font-bold text-red-900 space-y-1 md:space-y-0 md:space-x-4">
-                <p><i class="fas fa-clock mr-1"></i> বাকি সময়: <span id="suspend-countdown-display">হিসাব করা হচ্ছে...</span></p>
-                <p><i class="fas fa-gavel mr-1"></i> কারণ: <span id="suspend-reason-display"></span></p>
-            </div>
+    
+    <!-- 🔥 নতুন: গ্লোবাল নোটিশ বোর্ড (ফিক্সড) -->
+    <!-- টেক্সট লাইনের উপর ভিত্তি করে উচ্চতা নির্ধারণের জন্য p-2/p-4 ক্লাস ব্যবহার করা হয়েছে -->
+    <div id="global-notice-board" class="fixed-notice-board hidden" role="alert">
+        <div class="container max-w-6xl mx-auto px-4 py-2 flex items-center justify-center">
+            <i class="fas fa-bullhorn text-sm mr-3" id="notice-icon"></i>
+            <p id="notice-text" class="text-sm font-medium text-center"></p>
         </div>
     </div>
     
-    <!-- প্রধান কন্টেন্ট -->
-    <div class="container max-w-4xl mx-auto px-4 mt-2 hidden" id="main-content-container">
+    <!-- 🔥 নতুন: মোবাইল মেনু ব্যাকড্রপ -->
+    <div id="menu-backdrop" class="hidden" onclick="window.toggleMenu()"></div>
+
+    <!-- 🔥 নতুন: মোবাইল মেনু ওভারলে -->
+    <div id="mobile-menu-overlay" class="app-card border-l-4 border-blue-500 overflow-y-auto hidden">
+        <nav class="flex flex-col p-4 space-y-2">
+            <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">মেনু</h3>
+            
+            <a href="index.html" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition duration-200 font-semibold">
+                <i class="fas fa-home w-6"></i>
+                <span class="ml-3">হোম (Home)</span>
+            </a>
+            <a href="order.html" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition duration-200 font-semibold">
+                <i class="fas fa-plus-circle w-6"></i>
+                <span class="ml-3">নতুন অর্ডার</span>
+            </a>
+            <a href="profile.html" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition duration-200 font-semibold">
+                <i class="fas fa-user w-6"></i>
+                <span class="ml-3">আমার প্রোফাইল</span>
+            </a>
+            <a href="leaderboard.html" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition duration-200 font-semibold">
+                <i class="fas fa-crown w-6"></i>
+                <span class="ml-3">লিডারবোর্ড</span>
+            </a>
+            <a href="report.html" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition duration-200 font-semibold">
+                <i class="fas fa-info-circle w-6"></i>
+                <span class="ml-3">রিপোর্ট / নির্দেশিকা</span>
+            </a>
+            
+            <!-- লগআউট বাটন (মেনুর নিচে) -->
+            <div class="pt-4 border-t mt-4">
+                <button onclick="window.logout(); window.toggleMenu();" class="flex items-center p-3 w-full text-left text-red-600 hover:bg-red-50 rounded-lg transition duration-200 font-semibold">
+                    <i class="fas fa-sign-out-alt w-6"></i>
+                    <span class="ml-3">লগআউট</span>
+                </button>
+            </div>
+            
+        </nav>
+    </div>
+
+    <!-- ট্রাস্ট স্কোর / সাসপেনশন নোটিশ বোর্ড (এই ইলিমেন্টটি মুছে ফেলা হলো) -->
+    <!-- <div id="trust-notice-board" ...>...</div> -->
+    
+    <!-- প্রধান কন্টেন্ট (পরিবর্তন: mt-2 ক্লাস সরানো হলো, এখন JS margin-top সেট করবে) -->
+    <div class="container max-w-4xl mx-auto px-4 hidden" id="main-content-container">
         
         <main>
             <!-- দ্রুত অ্যাকশন কার্ড (Quick Actions Card) -->
@@ -356,7 +415,7 @@
             <div class="app-card p-6 mb-8" id="submitted-proofs-section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center border-b pb-4">
                     📝 আমার জমা দেওয়া প্রুফগুলোর স্ট্যাটাস
-                </small-avatar
+                </h2>
                 <div id="submitted-proofs-list" class="space-y-4">
                     <!-- Proofs will be loaded here -->
                 </div>
@@ -422,15 +481,38 @@
         const mainContentContainer = document.getElementById('main-content-container');
         const availableTasksGrid = document.getElementById('available-tasks-grid');
         const availableTasksSection = document.getElementById('available-tasks-section');
-        // নতুন সংযোজন: নোটিশ বোর্ড এলিমেন্ট
-        const trustNoticeBoard = document.getElementById('trust-notice-board');
+        // 🔥 নতুন: গ্লোবাল নোটিশ বোর্ডের DOM রেফারেন্স
+        const globalNoticeBoard = document.getElementById('global-notice-board'); 
+        const noticeTextElement = document.getElementById('notice-text');
+        const noticeIconElement = document.getElementById('notice-icon'); // 🔥 নতুন: আইকনের জন্য
+        
         const appHeader = document.getElementById('app-header');
+        
+        // 🔥 নতুন: মেনু ইলিমেন্টগুলো
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const menuBackdrop = document.getElementById('menu-backdrop');
+        const menuIcon = document.getElementById('menu-icon');
 
-        // 🔥 নতুন: নোটিশ বোর্ডের কন্টেন্ট ইলিমেন্টস
-        const noticeMessage = document.getElementById('notice-message');
-        const suspensionDetails = document.getElementById('suspension-details');
-        const suspendCountdownDisplay = document.getElementById('suspend-countdown-display'); 
-        const suspendReasonDisplay = document.getElementById('suspend-reason-display');
+        // 🔥 নতুন: মেনু টগল করার ফাংশন
+        window.toggleMenu = () => {
+            const isMenuOpen = mobileMenuOverlay.classList.toggle('open');
+            menuBackdrop.classList.toggle('open');
+            mobileMenuOverlay.classList.toggle('hidden');
+            menuBackdrop.classList.toggle('hidden');
+            
+            // আইকন পরিবর্তন
+            if (isMenuOpen) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+                // মেনু খোলার সময় স্ক্রলিং বন্ধ করা
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+                // মেনু বন্ধ করার সময় স্ক্রলিং চালু করা
+                document.body.style.overflow = '';
+            }
+        };
 
 
         const submitProofModal = document.getElementById('submit-proof-modal');
@@ -449,7 +531,11 @@
         
         let userProfileCache = {}; 
         
-        let countdownInterval = null; 
+        // 🔥 নোটিশ সাইক্লিংয়ের জন্য ভেরিয়েবল
+        let activeNotices = [];
+        let currentNoticeIndex = 0;
+        let noticeCycleInterval = null;
+        const NOTICE_DISPLAY_DURATION = 5000; // ৫ সেকেন্ড
 
         // ----------------------------------------------------------------------
         // 🔥 Cloudinary কনফিগারেশন: প্রুফ আপলোডের জন্য
@@ -464,7 +550,7 @@
          * এটি ছবির রেজোলিউশন (maxWidth=1024) এবং কোয়ালিটি (0.8) কমিয়ে ফাইল সাইজ উল্লেখযোগ্যভাবে হ্রাস করে।
          * @param {File} file - ইনপুট ইমেজ ফাইল (স্ক্রিনশট)
          * @param {number} maxWidth - ছবির সর্বোচ্চ প্রস্থ (যেমন: 1024px)
-         * @param {number} quality - JPEG/WebP কম্প্রেশন কোয়ালিটি (0.0 থেকে 1.0)
+         * @param {number} quality - JPEG/WebP কম্প্রেশন কোয়ালিটি (0.8 থেকে 1.0)
          * @returns {Promise<Blob>} - সংকুচিত Blob অবজেক্ট
          */
         const compressImage = (file, maxWidth = 1024, quality = 0.8) => {
@@ -513,73 +599,6 @@
                 reader.onerror = error => reject(error);
             });
         };
-
-
-        /**
-         * সময়কালকে (মিলিসেকেন্ড) ঘন্টা, মিনিট, সেকেন্ডে ফরম্যাট করে বাংলা স্ট্রিং তৈরি করে।
-         * @param {number} ms - বাকি সময় (মিলিসেকেন্ড)
-         * @returns {string} - ফরম্যাট করা বাংলা স্ট্রিং (যেমন: ১ ঘন্টা ৩৫ মিনিট ০৪ সেকেন্ড)
-         */
-        const formatDurationInBangla = (ms) => {
-            const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-            
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            const parts = [];
-            
-            // 🔥 বাংলা সংখ্যা ব্যবহার করা
-            const toBanglaNum = (num) => num.toLocaleString('bn-BD');
-
-            if (hours > 0) {
-                parts.push(`${toBanglaNum(hours)} ঘন্টা`);
-            }
-            if (minutes > 0) {
-                parts.push(`${toBanglaNum(minutes)} মিনিট`);
-            }
-            // সেকেন্ড সবসময় দেখানো হবে যদি totalSeconds > 0
-            if (totalSeconds > 0 && seconds >= 0) {
-                 parts.push(`${toBanglaNum(seconds)} সেকেন্ড`);
-            } else if (totalSeconds === 0) {
-                return '০ সেকেন্ড';
-            }
-
-            return parts.join(' ');
-        }
-        
-        /**
-         * সাসপেনশনের বাকি সময়ের কাউন্টডাউন শুরু করে।
-         * @param {number} suspendUntil - সাসপেনশনের শেষ সময় (মিলিসেকেন্ড)
-         */
-        const startSuspensionCountdown = (suspendUntil) => {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-            
-            const updateCountdown = () => {
-                const now = Date.now();
-                const remainingTime = suspendUntil - now;
-                
-                if (remainingTime <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                    suspendCountdownDisplay.textContent = 'সময় শেষ! পেজ রিলোড করুন।';
-                    // ৫ সেকেন্ড পর রিলোড করা
-                    setTimeout(() => window.location.reload(), 5000); 
-                    return;
-                }
-                
-                suspendCountdownDisplay.textContent = formatDurationInBangla(remainingTime);
-            };
-            
-            // প্রথমবার কল করা
-            updateCountdown(); 
-            // প্রতি সেকেন্ডে আপডেট করা
-            countdownInterval = setInterval(updateCountdown, 1000); 
-        };
-
 
         /**
          * বড় সংখ্যাকে সংক্ষিপ্ত ফর্মে (K, M, B) রূপান্তর করে।
@@ -901,18 +920,24 @@
         
         /**
          * নোটিশ বোর্ডের উচ্চতা অনুযায়ী প্রধান কন্টেন্ট এর মার্জিন সেট করে।
-         * এটি নিশ্চিত করে যে কন্টেন্ট নোটিশ বোর্ডের নিচে শুরু হবে।
+         * এখন নোটিশ বোর্ড না থাকলে শুধু হেডার এর উচ্চতা অনুযায়ী মার্জিন সেট করবে।
+         * 🔥 পরিবর্তন: মার্জিন ক্যালকুলেশন লজিক পরিমার্জন করা হলো।
          */
         const updateMainContentMargin = () => {
             const headerHeight = appHeader.offsetHeight || 64; // h-16 = 4rem = 64px
-            const defaultSpacing = 8; // mt-2 (0.5rem)
+            const gap = 16; // অতিরিক্ত স্পেস 1rem (16px)
+
+            let requiredMargin = headerHeight; 
             
-            let requiredMargin = headerHeight + defaultSpacing; 
-            
-            if (!trustNoticeBoard.classList.contains('hidden')) {
-                const noticeHeight = trustNoticeBoard.offsetHeight; 
-                requiredMargin = headerHeight + noticeHeight + 16; // 16px = 1rem (আরো একটু নিচে নামানো)
+            // নোটিশ বোর্ড দৃশ্যমান হলে তার প্রকৃত উচ্চতা পরিমাপ করে যোগ করা হচ্ছে
+            if (!globalNoticeBoard.classList.contains('hidden')) {
+                // নোটিশ বোর্ডের প্রকৃত উচ্চতা (প্যাডিং সহ)
+                const noticeHeight = globalNoticeBoard.offsetHeight; 
+                requiredMargin = headerHeight + noticeHeight;
             }
+            
+            // Header বা Header + Notice Board এর নিচে 16px এর একটি গ্যাপ নিশ্চিত করা
+            requiredMargin += gap; 
             
             // Tailwind utilities ব্যবহার না করে সরাসরি style.marginTop সেট করা
             mainContentContainer.style.marginTop = `${requiredMargin / 16}rem`; // px কে rem এ কনভার্ট করা
@@ -921,71 +946,88 @@
             showContentAndHideLoader();
         };
 
-        // 🔥 সাসপেনশন মডালের লজিক এখন নোটিশ বোর্ডের মধ্যে
-        const checkSuspensionStatus = (uid) => {
-            const suspensionRef = ref(rtdb, `users/${uid}/suspension`);
-            
-            const contentElements = [mainContentContainer, appHeader];
-            
-            onValue(suspensionRef, (snapshot) => {
-                const suspensionData = snapshot.val();
-                const now = Date.now();
+        // 🔥 নতুন: নোটিশ সাইক্লিং লজিক
+        const startNoticeCycling = (notices) => {
+            activeNotices = notices.sort((a, b) => a.lastUpdatedAt - b.lastUpdatedAt); // পুরোনোটা আগে দেখাবে
+            currentNoticeIndex = 0;
 
-                // ------------------------------------------
-                // ১. সাসপেনশন চেক লজিক
-                // ------------------------------------------
-                if (suspensionData && suspensionData.suspendUntil > now) {
-                    // ইউজার সাসপেন্ড আছে
-                    
-                    // a) UI ব্লকিং: পুরো পেজ ব্লার ও ব্লক করা
-                    contentElements.forEach(el => el.classList.add('content-suspended'));
-                    
-                    // b) নোটিশ বোর্ডকে সাসপেনশন মোডে সেট করা
-                    trustNoticeBoard.classList.remove('hidden');
-                    trustNoticeBoard.classList.add('suspended-mode');
-
-                    // c) সাসপেনশন মেসেজ সেট করা
-                    noticeMessage.innerHTML = `<i class="fas fa-ban mr-2"></i> **আপনার একাউন্ট সাময়িকভাবে সাসপেন্ড করা হয়েছে!**`;
-                    suspensionDetails.classList.remove('hidden');
-
-                    suspendReasonDisplay.textContent = suspensionData.reason || 'নির্দিষ্ট কারণ দেখানো হয়নি।';
-                    
-                    // d) কাউন্টডাউন শুরু করা
-                    startSuspensionCountdown(suspensionData.suspendUntil);
-                    
-                } else {
-                    // সাসপেন্ড নেই অথবা মেয়াদ শেষ
-                    
-                    // a) UI আনব্লক করা
-                    contentElements.forEach(el => el.classList.remove('content-suspended'));
-                    
-                    // b) কাউন্টডাউন বন্ধ করা
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
-                        countdownInterval = null;
-                    }
-
-                    if (suspensionData && suspensionData.suspendUntil < now) {
-                        // মেয়াদ শেষ হলে ডেটাবেস থেকে মুছে ফেলা
-                        set(suspensionRef, null).catch(e => console.error("Error clearing suspension:", e));
-                    }
-                    
-                    // c) নোটিশ বোর্ডকে সাধারণ ট্রাস্ট স্কোর মোডে সেট করা
-                    trustNoticeBoard.classList.remove('suspended-mode');
-                    suspensionDetails.classList.add('hidden');
-                    
-                    // d) ট্রাস্ট স্কোর ওয়ার্নিং চেক (ইউজার ডেটা লোড হওয়ার পর)
-                    if (currentUserData.trustScore < 100) {
-                        trustNoticeBoard.classList.remove('hidden');
-                        noticeMessage.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> আপনার trust Score কম। সঠিকভাবে কাজ করুন নাহলে আপনার একাউন্ট সাসপেন্ড করা হবে।`;
-                    } else {
-                        trustNoticeBoard.classList.add('hidden');
-                    }
-                }
+            // যদি একটির বেশি নোটিশ থাকে, তাহলে সাইক্লিং শুরু হবে
+            if (activeNotices.length > 1) {
+                // পুরানো ইন্টারভাল পরিষ্কার করা
+                if (noticeCycleInterval) clearInterval(noticeCycleInterval);
                 
-                // 🔥 সাসপেনশন লজিক শেষ হওয়ার পর মার্জিন আপডেট করা
-                updateMainContentMargin();
+                // প্রথম নোটিশ প্রদর্শন
+                displayCurrentNotice(); 
+                
+                // ৫ সেকেন্ড পর পর নোটিশ পরিবর্তন
+                noticeCycleInterval = setInterval(() => {
+                    currentNoticeIndex = (currentNoticeIndex + 1) % activeNotices.length;
+                    displayCurrentNotice();
+                }, NOTICE_DISPLAY_DURATION);
 
+            } else if (activeNotices.length === 1) {
+                // একটি মাত্র নোটিশ থাকলে সাইক্লিং বন্ধ করে শুধু সেটি দেখানো
+                if (noticeCycleInterval) clearInterval(noticeCycleInterval);
+                currentNoticeIndex = 0;
+                displayCurrentNotice(); 
+            } else {
+                 // কোনো নোটিশ না থাকলে নোটিশ বোর্ড লুকানো
+                 globalNoticeBoard.classList.add('hidden');
+            }
+            
+            // নোটিশের দৃশ্যমানতা পরিবর্তন হওয়ায় মার্জিন আপডেট
+            // *এখানে setTimeout ব্যবহার করা হলো যাতে ব্রাউজার DOM রেন্ডার করার জন্য সময় পায়
+            // এবং offsetHeight সঠিক মানটি রিটার্ন করতে পারে।*
+            setTimeout(updateMainContentMargin, 50); 
+        };
+        
+        // 🔥 নতুন: বর্তমান নোটিশটি DOM-এ প্রদর্শন করা
+        const displayCurrentNotice = () => {
+            if (activeNotices.length === 0) {
+                 globalNoticeBoard.classList.add('hidden');
+                 return;
+            }
+            
+            const noticeData = activeNotices[currentNoticeIndex];
+            
+            noticeTextElement.textContent = noticeData.text;
+            
+            // নোটিশবোর্ডের রঙ পরিবর্তন
+            globalNoticeBoard.style.backgroundColor = noticeData.backgroundColor || '#ffc107'; 
+            globalNoticeBoard.style.color = noticeData.textColor || '#343a40'; 
+            
+            // আইকনের রঙ পরিবর্তন
+            noticeIconElement.style.color = noticeData.textColor || '#343a40'; 
+            
+            globalNoticeBoard.classList.remove('hidden');
+            
+            // প্রতিবার নোটিশ পরিবর্তন হওয়ার পর মার্জিন নিশ্চিত করা
+            // *এখানেও setTimeout ব্যবহার করা হলো যাতে নতুন টেক্সট লোড হওয়ার পর 
+            // offsetHeight পরিমাপের সুযোগ পায়।*
+            setTimeout(updateMainContentMargin, 50); 
+        };
+        
+        // 🔥 নতুন: গ্লোবাল নোটিশের জন্য লিসেনার (একাধিক নোটিশের জন্য আপডেট করা হয়েছে)
+        const listenForGlobalNotice = () => {
+            // admin.html থেকে নেওয়া নতুন পাথ
+            const noticesRef = ref(rtdb, `controls/settings/notices`); 
+
+            onValue(noticesRef, (snapshot) => {
+                const notices = snapshot.val() || {};
+                
+                // সক্রিয় নোটিশগুলো ফিল্টার করা
+                const newActiveNotices = Object.keys(notices)
+                    .map(key => notices[key])
+                    .filter(notice => notice.isActive === true && notice.text);
+
+                if (newActiveNotices.length > 0) {
+                    startNoticeCycling(newActiveNotices);
+                } else {
+                    // কোনো সক্রিয় নোটিশ না থাকলে
+                    if (noticeCycleInterval) clearInterval(noticeCycleInterval);
+                    globalNoticeBoard.classList.add('hidden');
+                    updateMainContentMargin(); 
+                }
             });
         };
 
@@ -994,8 +1036,8 @@
             if (user) {
                 userId = user.uid;
                 
-                // 🔥🔥 স্টেপ ৩: সাসপেনশন স্টেট চেক করার কোড যুক্ত
-                checkSuspensionStatus(user.uid); 
+                // 🔥🔥 গ্লোবাল নোটিশবোর্ড লিসেনার চালু করা হলো
+                listenForGlobalNotice(); 
                 // ******************************************************
                 
                 const userRef = ref(rtdb, `users/${userId}`);
@@ -1016,7 +1058,8 @@
                             trustScore: 0 
                         };
                         try {
-                            await set(userRef, initialUserData);
+                            // যেহেতু ব্যবহারকারী সর্বদা Firebase Realtime Database ব্যবহার করতে বলেছেন, তাই এখানে Firestore এর বদলে Realtime Database ব্যবহার করা হয়েছে।
+                            await set(userRef, initialUserData); 
                             return; 
                         } catch (e) {
                             console.error("User initialization failed:", e);
@@ -1032,12 +1075,7 @@
                     const userRole = userData.role || 'user'; 
                     const usertrustScore = userData.trustScore || 0; 
 
-                    // ** ট্রাস্ট স্কোর নোটিশ বোর্ড দেখানো/লুকানোর লজিক **
-                    // 🔥 এই ব্লকটি এখন `checkSuspensionStatus` ফাংশনের `else` ব্লকে চলে গেছে। 
-                    // এখানে শুধু `checkSuspensionStatus` আবার কল করা হলো যাতে ডেটা লোড হওয়ার পরে ট্রাস্ট স্কোর ওয়ার্নিং আপডেট হয়।
-                    checkSuspensionStatus(user.uid);
-                    // ******************************************************
-
+                    // নোটিশ লিসেনার চালু থাকলে, এটি নিজেই মার্জিন আপডেট করবে।
 
                     updateDashboardLinks(userRole); 
                     
@@ -1138,7 +1176,6 @@
                         
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             
-                            <!-- বাম পাশ: টাস্ক টাইপ, নাম ও জমা দেওয়ার সময় -->
                             <div class="space-y-1 mb-3 sm:mb-0">
                                 <div class="flex items-center space-x-2">
                                     ${getTaskTypeBadge(proof.taskType)}
@@ -1155,14 +1192,9 @@
                                 ${reviewerDisplay} 
                             </div>
 
-                            <!-- ডান পাশ: স্ট্যাটাস ও পয়েন্ট -->
                             <div class="text-right flex flex-col items-end space-y-1">
                                 ${statusInfo}
-                                <!-- 🔥 পরিবর্তন: প্রুফ দেখুন বাটন সরানো হয়েছে, শুধুমাত্র রিভিউয়ারের নাম দেখানো হবে -->
-                                <!-- <a href="${proof.screenshotUrl || proof.taskLink}" target="_blank" class="brand-blue-text hover:underline text-xs flex items-center">
-                                    <i class="fas fa-image mr-1"></i> প্রুফ দেখুন
-                                </a> -->
-                            </div>
+                                </div>
                         </div>
                         
                         ${rejectionReasonHtml}
@@ -1281,7 +1313,6 @@
                 const taskCard = `
                     <div class="app-card p-5">
                         
-                        <!-- টাস্ক মালিকের নাম, ছবি ও রেটিং -->
                         <div class="mb-3 pb-3 border-b border-gray-100">
                             ${ownerInfoHtml}
                         </div>
@@ -1439,8 +1470,12 @@
         };
 
         window.onclick = function(event) {
-            if (event.target === submitProofModal) {
+            if (event.target === submitProofModal || event.target === menuBackdrop) {
                 submitProofModal.classList.add('hidden');
+                // মেনু খোলা থাকলে বন্ধ করে দেওয়া
+                if (menuBackdrop.classList.contains('open')) {
+                    window.toggleMenu();
+                }
             }
         };
     </script>

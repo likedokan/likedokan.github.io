@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডেভেলপার প্রোফাইল ও প্রযুক্তি</title>
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন */
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল */
+        .brand-blue {
+            background-color: #0d6efd;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক */
+        .app-card {
+            background: white;
+            border-radius: 16px; 
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); 
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12); 
+            transform: translateY(-2px);
+        }
+
+        /* প্রোফাইল ইমেজ কনটেইনার */
+        .profile-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* প্রযুক্তি ব্যাজ */
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e5e7eb;
+            color: #4b5563;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tech-badge:hover {
+            background-color: #d1d5db;
+        }
+
+        .tech-icon {
+            font-size: 1.25rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+
+<body class="p-4 flex flex-col items-center justify-center">
+
+    <div class="container max-w-4xl w-full">
+        
+        <header class="app-card p-6 text-center mb-6 md:mb-8 bg-blue-50">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-code text-blue-600 text-3xl md:text-4xl"></i>
+                ডেভেলপার প্রোফাইল ও প্রযুক্তি
+            </h1>
+            <p class="text-gray-600 font-semibold mt-2">এই প্ল্যাটফর্মটির পেছনের দল ও প্রযুক্তি সম্পর্কে জানুন।</p>
+        </header>
+
+        <main class="space-y-8">
+            
+            <!-- ডেভেলপার প্রোফাইল কার্ড -->
+            <section class="app-card p-6 md:p-8">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <!-- প্রোফাইল ছবি বা প্লেসহোল্ডার -->
+                    <div class="profile-container bg-gray-300">
+                        <!-- এখানে একটি প্রকৃত প্রোফাইল ছবি দেওয়া যেতে পারে। এখন প্লেসহোল্ডার ব্যবহার করা হলো। -->
+                        <img src="https://placehold.co/120x120/0d6efd/ffffff?text=D+Dev" alt="ডেভেলপার ছবি" onerror="this.onerror=null; this.src='https://placehold.co/120x120/0d6efd/ffffff?text=D+Dev';">
+                    </div>
+                    
+                    <div class="text-center md:text-left flex-1">
+                        <h2 class="text-3xl font-bold brand-blue-text mb-2">আপনার নাম (ডেভেলপার)</h2>
+                        <p class="text-xl font-semibold text-gray-700 mb-3">সিনিয়র সফটওয়্যার ইঞ্জিনিয়ার</p>
+                        <p class="text-gray-600 max-w-lg mx-auto md:mx-0">
+                            আমি এই **Like Dokan** প্ল্যাটফর্মটির ডিজাইন ও ডেভেলপমেন্টের প্রধান দায়িত্বে ছিলাম। 
+                            ব্যবহারকারী এবং টাস্কের ডেটা সুরক্ষিত ও রিয়েল-টাইমে পরিচালনার জন্য আমি **Firebase Realtime Database** ব্যবহার করেছি। 
+                            আমার মূল লক্ষ্য হলো ব্যবহারকারীদের জন্য একটি দ্রুত, নির্ভরযোগ্য এবং জালিয়াতিমুক্ত অভিজ্ঞতা নিশ্চিত করা।
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- যোগাযোগের তথ্য -->
+                <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap justify-center md:justify-start gap-4">
+                    <span class="text-gray-700 font-medium"><i class="fas fa-envelope mr-2 text-red-500"></i> ইমেইল: developer@example.com</span>
+                    <span class="text-gray-700 font-medium"><i class="fab fa-github mr-2 text-gray-800"></i> গিটহাব: /yourusername</span>
+                </div>
+            </section>
+            
+            <!-- প্রযুক্তি স্ট্যাক কার্ড -->
+            <section class="app-card p-6 md:p-8 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 flex items-center gap-3">
+                    <i class="fas fa-laptop-code text-green-500"></i> প্রযুক্তিগত স্ট্যাক
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- ১. ফ্রন্ট-এন্ড -->
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-700 mb-3 flex items-center"><i class="fas fa-bezier-curve mr-2 text-purple-600"></i> ফ্রন্ট-এন্ড</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="tech-badge"><i class="fab fa-html5 text-orange-500 tech-icon"></i> HTML5</span>
+                            <span class="tech-badge"><i class="fab fa-js-square text-yellow-500 tech-icon"></i> Vanilla JS</span>
+                            <span class="tech-badge"><i class="fas fa-wind text-blue-400 tech-icon"></i> Tailwind CSS</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ২. ব্যাক-এন্ড ও ডেটাবেস -->
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-700 mb-3 flex items-center"><i class="fas fa-database mr-2 text-indigo-600"></i> ডেটাবেস ও স্টোরেজ</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <!-- 🔥 Realtime Database উল্লেখ করা হলো -->
+                            <span class="tech-badge"><i class="fas fa-fire text-yellow-600 tech-icon"></i> Firebase Realtime DB</span>
+                            <span class="tech-badge"><i class="fas fa-cloud-upload-alt text-cyan-500 tech-icon"></i> Cloudinary (Image Storage)</span>
+                        </div>
+                    </div>
+
+                    <!-- ৩. মূল বৈশিষ্ট্য -->
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 md:col-span-2">
+                        <h3 class="text-xl font-bold text-gray-700 mb-3 flex items-center"><i class="fas fa-cog mr-2 text-red-600"></i> মূল বৈশিষ্ট্য</h3>
+                        <ul class="list-disc list-inside ml-4 text-gray-600 space-y-1 text-base">
+                            <li>রিয়েল-টাইম পয়েন্ট ট্রানজেকশন সিস্টেম।</li>
+                            <li>স্বয়ংক্রিয় ইউজার ট্রাস্ট স্কোর (বিশ্বাসযোগ্যতা) গণনা।</li>
+                            <li>এডমিন/মডারেটর প্যানেল ব্যবহার করে প্রুফ যাচাই ও ইউজার সাসপেনশন নিয়ন্ত্রণ।</li>
+                            <li>মোবাইল-বান্ধব (Responsive) ডিজাইন।</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        
+        <div class="mt-8 text-center">
+            <a href="index.html" class="inline-flex items-center brand-blue text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                ড্যাশবোর্ডে ফিরে যান
+            </a>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    
+</body>
+</html>
+
