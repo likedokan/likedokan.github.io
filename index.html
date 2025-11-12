@@ -426,6 +426,44 @@
         </main>
     </div>
 
+    <!-- 🔥 নতুন: সাসপেনশন মডাল -->
+    <div id="suspension-modal" class="fixed inset-0 z-50 flex justify-center items-center p-4 transition-opacity duration-300 hidden" style="background-color: rgba(0, 0, 0, 0.6);">
+        <div class="app-card p-6 w-full max-w-md relative animate-in zoom-in-50 duration-300 border-t-4 border-red-500">
+            <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-3xl transition" onclick="closeModal('suspension-modal')">
+                &times;
+            </button>
+            <div class="text-center mb-6">
+                <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4 animate-pulse"></i>
+                <h2 class="text-2xl font-bold text-red-600">আপনি সাসপেন্ডেড!</h2>
+            </div>
+            
+            <p class="text-gray-700 mb-4 text-center">
+                আপনার অ্যাকাউন্টে সাময়িক নিষেধাজ্ঞা জারি করা হয়েছে। এই সময়ে আপনি কোনো **নতুন কাজ করতে পারবেন না**।
+            </p>
+
+            <div class="bg-red-50 p-4 rounded-lg space-y-3">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-semibold text-gray-600"><i class="fas fa-gavel mr-2"></i> কারণ:</span>
+                    <span id="suspension-reason" class="font-bold text-red-700 text-right">নির্দিষ্ট করা হয়নি</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-semibold text-gray-600"><i class="fas fa-calendar-times mr-2"></i> নিষেধাজ্ঞার শেষ:</span>
+                    <span id="suspension-end-date" class="font-bold text-gray-800 text-right">স্থায়ী</span>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t text-center">
+                <p class="text-xs text-gray-500 mb-3">
+                    যদি আপনি মনে করেন এটি ভুলবশত হয়েছে, তবে নির্দেশিকা সেকশনে যোগাযোগ করুন।
+                </p>
+                <button class="w-full bg-red-500 text-white py-2 text-center rounded-lg font-bold hover:bg-red-600 transition duration-200" onclick="closeModal('suspension-modal')">
+                    বুঝেছি
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- 🔥 সাসপেনশন মডাল শেষ -->
+
     <!-- প্রুফ জমা দিন মডাল (পরিবর্তিত: শুধু নাম ও স্ক্রিনশট) -->
     <div id="submit-proof-modal" class="fixed inset-0 z-50 flex justify-center items-center p-4 transition-opacity duration-300 hidden" style="background-color: rgba(0, 0, 0, 0.4);">
         <div class="app-card p-6 w-full max-w-md relative animate-in zoom-in-50 duration-300">
@@ -492,6 +530,9 @@
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
         const menuBackdrop = document.getElementById('menu-backdrop');
         const menuIcon = document.getElementById('menu-icon');
+
+        // 🔥 নতুন: সাসপেনশন মডাল DOM রেফারেন্স
+        const suspensionModal = document.getElementById('suspension-modal'); 
 
         // 🔥 নতুন: মেনু টগল করার ফাংশন
         window.toggleMenu = () => {
@@ -727,6 +768,29 @@
             return date.toLocaleString('bn-BD', { 
                 year: 'numeric', 
                 month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        };
+
+        /**
+         * সাসপেনশনের শেষ সময়কে সহজে বোধগম্য ফরম্যাটে দেখায়।
+         * @param {number} timestamp - সাসপেনশনের শেষ তারিখের মিলিসেকেন্ডে সময়।
+         * @returns {string} - ফরম্যাট করা ডেট-টাইম স্ট্রিং বা "স্থায়ী"।
+         */
+        const formatSuspensionDate = (timestamp) => {
+            if (!timestamp) return 'স্থায়ী';
+            
+            const suspensionEnd = new Date(timestamp);
+            // যদি শেষ সময় এখনকার সময়ের চেয়ে কম হয়, তাহলে ধরে নেওয়া হবে সাসপেনশন নেই
+            if (suspensionEnd <= new Date()) { 
+                return 'নিষেধাজ্ঞা নেই / শেষ হয়েছে';
+            }
+            
+            return suspensionEnd.toLocaleString('bn-BD', { 
+                year: 'numeric', 
+                month: 'long', 
                 day: 'numeric', 
                 hour: '2-digit', 
                 minute: '2-digit' 
@@ -1055,7 +1119,8 @@
                             createdAt: Date.now(),
                             lastFacebookName: '',
                             role: 'user', 
-                            trustScore: 0 
+                            trustScore: 0,
+                            suspension: { isSuspended: false, reason: "", endDate: 0 } // 🔥 নতুন সাসপেনশন ডেটা
                         };
                         try {
                             // যেহেতু ব্যবহারকারী সর্বদা Firebase Realtime Database ব্যবহার করতে বলেছেন, তাই এখানে Firestore এর বদলে Realtime Database ব্যবহার করা হয়েছে।
@@ -1348,6 +1413,25 @@
         };
 
         window.openSubmitProofModal = (taskId) => {
+            
+            // 🔥🔥 নতুন সাসপেনশন চেক লজিক 🔥🔥
+            const suspensionDetails = currentUserData.suspension || {};
+            const isSuspended = suspensionDetails.isSuspended === true;
+            const suspensionEnd = suspensionDetails.endDate || 0;
+            
+            // যদি ইউজার সাসপেন্ডেড থাকে এবং নিষেধাজ্ঞার সময় শেষ না হয়
+            if (isSuspended && suspensionEnd > Date.now()) {
+                
+                // মডালটিতে সাসপেনশনের তথ্য সেট করা
+                document.getElementById('suspension-reason').textContent = suspensionDetails.reason || 'নির্দিষ্ট কোনো কারণ দেওয়া হয়নি।';
+                document.getElementById('suspension-end-date').textContent = formatSuspensionDate(suspensionEnd);
+
+                // সাসপেনশন মডাল দেখানো
+                suspensionModal.classList.remove('hidden');
+                return; // মূল প্রুফ সাবমিশন মডাল খোলা বন্ধ করা
+            }
+            // 🔥🔥 সাসপেনশন চেক লজিক শেষ 🔥🔥
+
             currentTaskId = taskId;
             
             // শেষবার জমা দেওয়া ডেটা দিয়ে ইনপুট ফিল্ডগুলো স্বয়ংক্রিয়ভাবে পূরণ করা হচ্ছে
@@ -1470,8 +1554,9 @@
         };
 
         window.onclick = function(event) {
-            if (event.target === submitProofModal || event.target === menuBackdrop) {
+            if (event.target === submitProofModal || event.target === menuBackdrop || event.target === suspensionModal) {
                 submitProofModal.classList.add('hidden');
+                suspensionModal.classList.add('hidden');
                 // মেনু খোলা থাকলে বন্ধ করে দেওয়া
                 if (menuBackdrop.classList.contains('open')) {
                     window.toggleMenu();

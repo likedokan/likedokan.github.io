@@ -1691,7 +1691,7 @@
             showNotification(`ইউজার ID ${uId.substring(0, 8)}... কে সাসপেন্ড করার প্রক্রিয়া চলছে...`, 'info', 3000);
             const suspendUntil = Date.now() + (durationMinutes * 60 * 1000); 
             try {
-                const suspensionRef = ref(rtdb, `users/${uId}/suspension`);
+                const suspensionRef = ref(rtdb, `suspension/${uid}`);
                 await set(suspensionRef, {
                     suspended: true, suspendUntil: suspendUntil, reason: reasonMessage,
                     issuedBy: currentUserId, issuedAt: Date.now()
