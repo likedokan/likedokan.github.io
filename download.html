@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অ্যাপ ডাউনলোড করুন | LikeDokan</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ফন্ট ও ব্যাকগ্রাউন্ড কাস্টমাইজেশন (index.html থেকে নেওয়া) */
+        body {
+            font-family: 'Hind Siliguri', Inter, sans-serif;
+            background-color: #f7f9fc;
+            min-height: 100vh;
+        }
+
+        /* ব্র্যান্ডিং কালার - আধুনিক নীল (index.html থেকে নেওয়া) */
+        .brand-blue {
+            background-color: #0d6efd; 
+            transition: background-color 0.2s;
+        }
+
+        .brand-blue:hover {
+            background-color: #0b5ed7;
+        }
+
+        .brand-blue-text {
+            color: #0d6efd;
+        }
+
+        /* কার্ড স্টাইল - এলিভেটেড লুক (index.html থেকে নেওয়া) */
+        .app-card {
+            background: white;
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+
+        .app-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        /* প্রধান ডাউনলোড বাটন স্টাইল */
+        .main-download-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .main-download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.6);
+        }
+
+        /* ফিচার আইকন ব্যাকগ্রাউন্ড */
+        .feature-icon-bg {
+            background-color: #eef2ff; /* হালকা নীল */
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center justify-center">
+
+    <!-- Main Download Card Container -->
+    <div class="container max-w-lg w-full">
+        
+        <header class="app-card p-6 text-center mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center justify-center gap-4">
+                <i class="fas fa-mobile-alt text-blue-500 text-3xl md:text-4xl"></i>
+                অফিসিয়াল অ্যাপ ডাউনলোড করুন
+            </h1>
+            <p class="text-gray-500 font-semibold mt-2">আপনার কাজগুলো এখন আরও সহজে করুন!</p>
+        </header>
+
+
+        <main class="app-card p-6 md:p-8 text-center mx-auto">
+            
+            <!-- App Icon/Logo Placeholder -->
+            <div class="mb-6">
+                <!-- ব্র্যান্ডিং কালারের সাথে সামঞ্জস্যপূর্ণ একটি উন্নত আইকন প্লেসহোল্ডার -->
+                <div class="mx-auto w-20 h-20 rounded-2xl brand-blue flex items-center justify-center shadow-lg">
+                    <span class="text-4xl text-white font-bold" role="img" aria-label="App Icon">A</span> 
+                </div>
+            </div>
+
+            <!-- App Name and Headline -->
+            <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">
+                LikeDokan (V1.1)
+            </h2>
+            <p class="text-md text-gray-600 mb-8">
+                দ্রুত পারফরম্যান্স এবং সেরা ইউজার ইন্টারফেসের জন্য অফিসিয়াল অ্যাপটি ডাউনলোড করুন।
+            </p>
+
+            <!-- Download Button Section -->
+            <div class="space-y-4 md:space-y-0 md:space-x-4 flex flex-col justify-center items-center mb-8">
+                
+                <!-- Primary APK Download Button (Highly Prominent) -->
+                <a href="LikeDokan_release.apk" download class="main-download-button inline-flex items-center justify-center w-full md:w-auto px-10 py-4 border-transparent text-lg font-bold rounded-full text-white brand-blue transition ease-in-out duration-300">
+                    <i class="fas fa-download h-6 w-6 mr-3"></i>
+                    APK ডাউনলোড করুন
+                </a>
+                
+                <!-- Optional: Google Play Store Link (Secondary CTA) -->
+                <button onclick="showDownloadMessage('Google Play Store-এর মাধ্যমে ডাউনলোড লিঙ্ক শীঘ্রই আসছে...')" class="inline-flex items-center justify-center w-full md:w-auto px-10 py-3 border border-gray-300 text-md font-semibold rounded-full text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-300 mt-4 md:mt-0">
+                    <img src="https://placehold.co/20x20/0d6efd/FFFFFF/png?text=P" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%230d6efd\'><path d=\'M3 13.5v7.5l7.5-7.5H3zm7.5-7.5H21L13.5 15V6zM3 3h7.5L3 10.5V3zm10.5 0v1.5L21 3v7.5l-7.5-7.5z\'/></svg>'" class="h-5 w-5 mr-2" alt="Play Store Icon"/>
+                    প্লে স্টোরে পান
+                </button>
+            </div>
+
+            <!-- Key Features Section (Grid Layout) -->
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 border-b-2 brand-blue-text inline-block pb-1">অ্যাপের মূল সুবিধা</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+                    <!-- Feature 1 -->
+                    <div class="flex flex-col items-center text-center p-3 bg-gray-50 rounded-xl hover:bg-blue-50 transition duration-300">
+                        <div class="feature-icon-bg text-blue-600 mb-2 w-10 h-10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800">অতি দ্রুত</p>
+                        <p class="text-xs text-gray-500 mt-1">লাইটওয়েট এবং মসৃণ।</p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="flex flex-col items-center text-center p-3 bg-gray-50 rounded-xl hover:bg-blue-50 transition duration-300">
+                        <div class="feature-icon-bg text-blue-600 mb-2 w-10 h-10 rounded-full flex items-center justify-center">
+                             <i class="fas fa-battery-three-quarters"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800">ব্যাটারি সাশ্রয়</p>
+                        <p class="text-xs text-gray-500 mt-1">কম রিসোর্স ব্যবহার করে।</p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="flex flex-col items-center text-center p-3 bg-gray-50 rounded-xl hover:bg-blue-50 transition duration-300">
+                        <div class="feature-icon-bg text-blue-600 mb-2 w-10 h-10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800">১০০% নিরাপদ</p>
+                        <p class="text-xs text-gray-500 mt-1">আপনার ডেটা সুরক্ষিত।</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        <div class="text-center mt-6">
+            <a href="index.html" class="inline-flex items-center bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                ড্যাশবোর্ডে ফিরে যান
+            </a>
+        </div>
+
+
+    </div>
+    
+    <!-- Custom Message Modal (index.html, profile.html এর স্টাইল অনুসরণ করে) -->
+    <div id="message-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 z-50 transition duration-300">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform scale-100 transition duration-300">
+            <h3 class="text-xl font-bold brand-blue-text mb-3" id="modal-title">বার্তা</h3>
+            <p class="text-gray-700 mb-6" id="modal-body">ডাউনলোড শুরু হচ্ছে...</p>
+            <button onclick="document.getElementById('message-modal').classList.add('hidden')" class="w-full brand-blue text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // জাভাস্ক্রিপ্ট ফাংশন যা মেসেজ দেখায় (alert() ব্যবহার না করে)
+        function showDownloadMessage(message, title = 'ডাউনলোড শুরু') {
+            const modal = document.getElementById('message-modal');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = message;
+            modal.classList.remove('hidden');
+        }
+
+        // APK ডাউনলোড বাটনে ক্লিক ইভেন্ট লিসেনার
+        document.querySelector('a[download]').addEventListener('click', function(e) {
+            // আসল ডাউনলোডটি ঘটতে দিন, কিন্তু একটি নিশ্চিতকরণ বার্তা দেখান
+            showDownloadMessage('আপনার অ্যাপটির ডাউনলোড শুরু হয়েছে। অনুগ্রহ করে ডাউনলোড সম্পন্ন হওয়ার জন্য অপেক্ষা করুন।', 'ডাউনলোড শুরু হয়েছে');
+        });
+    </script>
+
+</body>
+</html>
+
